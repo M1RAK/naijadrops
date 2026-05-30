@@ -1,2 +1,4 @@
-export * from '@/types/database.types'
-export * from '@/types/domain.types'
+export * from './database.types'
+export * from './domain.types'
+export * from './api.types'
+export * from './ui.types'

@@ -337,7 +337,7 @@ function TrackingContent() {
 			{/* Order details panel */}
 			<div className='flex-1 px-5 pt-6 pb-10 space-y-4 overflow-y-auto'>
 				{/* Route card */}
-				<div className='bg-white/[0.04] border border-white/10 rounded-3xl p-5 space-y-4'>
+				<div className='bg-white/4 border border-white/10 rounded-3xl p-5 space-y-4'>
 					<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest'>
 						Route
 					</div>
@@ -374,7 +374,7 @@ function TrackingContent() {
 
 				{/* Price + recipient */}
 				<div className='grid grid-cols-2 gap-3'>
-					<div className='bg-white/[0.04] border border-white/10 rounded-2xl p-4'>
+					<div className='bg-white/4 border border-white/10 rounded-2xl p-4'>
 						<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest mb-1'>
 							Fare
 						</div>
@@ -383,7 +383,7 @@ function TrackingContent() {
 						</div>
 					</div>
 					{order.recipient_name && (
-						<div className='bg-white/[0.04] border border-white/10 rounded-2xl p-4'>
+						<div className='bg-white/4 border border-white/10 rounded-2xl p-4'>
 							<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest mb-1'>
 								Recipient
 							</div>
@@ -415,7 +415,7 @@ function TrackingContent() {
 
 				{/* Description */}
 				{order.item_description && (
-					<div className='bg-white/[0.02] border border-white/5 rounded-2xl p-4'>
+					<div className='bg-white/2 border border-white/5 rounded-2xl p-4'>
 						<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest mb-1'>
 							Package
 						</div>

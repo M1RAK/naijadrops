@@ -1,0 +1,6 @@
+export * from './orders.service'
+export * from './riders.service'
+export * from './vendors.service'
+export * from './auth.service'
+export * from './dispatch.service'
+export * from './payments.service'

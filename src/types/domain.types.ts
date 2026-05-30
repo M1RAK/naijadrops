@@ -16,9 +16,6 @@ export interface RiderWithUser extends DbRider {
 	users: Pick<DbUser, 'full_name' | 'email'> | null
 }
 
-// Type '"full_name" | "email"' does not satisfy the constraint 'keyof DbUser'.
-// Type '"full_name"' is not assignable to type 'keyof DbUser'.
-
 /** Order row + the rider's profile (for vendor tracking view) */
 export interface OrderWithRider extends DbOrder {
 	riders: RiderWithUser | null

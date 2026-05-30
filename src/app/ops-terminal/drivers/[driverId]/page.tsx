@@ -282,7 +282,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 												/>
 											</div>
 											<div>
-												<div className='text-sm font-bold text-white truncate max-w-[200px]'>
+												<div className='text-sm font-bold text-white truncate max-w-50'>
 													{order.dropoff_name}
 												</div>
 												<div className='text-[10px] text-charcoal-500 font-bold uppercase tracking-widest'>

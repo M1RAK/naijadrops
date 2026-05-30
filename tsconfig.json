@@ -4,7 +4,6 @@
 //     // File Layout
 //     // "rootDir": "./src",
 //     // "outDir": "./dist",
-
 //     // Environment Settings
 //     // See also https://aka.ms/tsconfig/module
 //     "module": "nodenext",
@@ -14,16 +13,13 @@
 //     // "lib": ["esnext"],
 //     // "types": ["node"],
 //     // and npm install -D @types/node
-
 //     // Other Outputs
 //     "sourceMap": true,
 //     "declaration": true,
 //     "declarationMap": true,
-
 //     // Stricter Typechecking Options
 //     "noUncheckedIndexedAccess": true,
 //     "exactOptionalPropertyTypes": true,
-
 //     // Style Options
 //     // "noImplicitReturns": true,
 //     // "noImplicitOverride": true,
@@ -31,7 +27,6 @@
 //     // "noUnusedParameters": true,
 //     // "noFallthroughCasesInSwitch": true,
 //     // "noPropertyAccessFromIndexSignature": true,
-
 //     // Recommended Options
 //     "strict": true,
 //     "jsx": "react-jsx",
@@ -42,16 +37,17 @@
 //     "skipLibCheck": true,
 //   }
 // }
-
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     /* Allow .js files while you migrate gradually */
     "allowJs": true,
     "checkJs": false,
-
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -60,20 +56,28 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
-    "plugins": [{ "name": "next" }],
-
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     /* Path alias — matches jsconfig.json */
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules"
+  ]
 }
