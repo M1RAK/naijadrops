@@ -47,7 +47,7 @@ export default async function AdminDriversPage() {
 							key={rider.user_id}
 							href={`/ops-terminal/drivers/${rider.user_id}`}>
 							<div className='bg-charcoal-900/40 border border-white/5 rounded-2xl p-6 flex items-center gap-6 hover:border-emerald-500/20 transition-all cursor-pointer'>
-								<div className='w-16 h-16 rounded-2xl bg-charcoal-800 flex-shrink-0 flex items-center justify-center text-xs font-black'>
+								<div className='w-16 h-16 rounded-2xl bg-charcoal-800 shrink-0 flex items-center justify-center text-xs font-black'>
 									{rider.profile_photo_url ? (
 										<img
 											src={rider.profile_photo_url}

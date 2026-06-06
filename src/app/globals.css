@@ -35,6 +35,8 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
+    --font-outfit: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    --font-inter: ui-sans-serif, system-ui, sans-serif;
   }
 
   html, body {
