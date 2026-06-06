@@ -1,6 +1,6 @@
 import { validateAdmin } from '@/utils/admin'
 import { createClient } from '@/utils/supabase/server'
-import { notFound } from 'next/navigation'
+import { redirect, notFound } from 'next/navigation'
 import {
 	ShieldCheck,
 	ShieldAlert,
@@ -16,13 +16,9 @@ import {
 import Link from 'next/link'
 import DriverActions from '../DriverActions'
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-
 interface PageProps {
 	params: { driverId: string }
 }
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: string }) {
 	const config: Record<string, { label: string; classes: string }> = {
@@ -43,12 +39,10 @@ function StatusBadge({ status }: { status: string }) {
 			classes: 'bg-red-500/10 text-red-400 border-red-500/20'
 		}
 	}
-
 	const { label, classes } = config[status] ?? {
 		label: status,
 		classes: 'bg-white/5 text-charcoal-400 border-white/10'
 	}
-
 	return (
 		<span
 			className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${classes}`}>
@@ -87,24 +81,23 @@ function DocumentCard({ label, url }: { label: string; url: string | null }) {
 	)
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────
-
 export default async function DriverDetailPage({ params }: PageProps) {
-	await validateAdmin()
-	const supabase = await createClient()
+	let supabase
+	try {
+		await validateAdmin()
+		supabase = await createClient()
+	} catch {
+		redirect('/')
+	}
 
-	// Fetch the rider profile joined with their user account
 	const { data: rider, error } = await supabase
 		.from('riders')
 		.select('*, users(full_name, email, phone)')
 		.eq('user_id', params.driverId)
 		.single()
 
-	if (error || !rider) {
-		notFound()
-	}
+	if (error || !rider) notFound()
 
-	// Fetch their delivery history
 	const { data: recentOrders } = await supabase
 		.from('orders')
 		.select(
@@ -123,7 +116,6 @@ export default async function DriverDetailPage({ params }: PageProps) {
 
 	return (
 		<div className='min-h-screen bg-black text-white p-8 font-mono'>
-			{/* Back + header */}
 			<div className='flex items-center gap-4 mb-10 border-b border-white/10 pb-8'>
 				<Link
 					href='/ops-terminal/drivers'
@@ -148,9 +140,8 @@ export default async function DriverDetailPage({ params }: PageProps) {
 			</div>
 
 			<div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-				{/* ── Left column ── */}
+				{/* Left column */}
 				<div className='lg:col-span-1 space-y-6'>
-					{/* Profile card */}
 					<div className='bg-charcoal-900/40 border border-white/5 rounded-3xl p-8'>
 						<div className='flex flex-col items-center text-center mb-6'>
 							<div className='w-24 h-24 rounded-3xl bg-charcoal-800 border border-white/10 overflow-hidden mb-4 flex items-center justify-center'>
@@ -176,7 +167,6 @@ export default async function DriverDetailPage({ params }: PageProps) {
 								</span>
 							</div>
 						</div>
-
 						<div className='space-y-3 text-sm'>
 							{rider.users?.email && (
 								<div className='flex items-center gap-3 text-charcoal-400'>
@@ -219,7 +209,6 @@ export default async function DriverDetailPage({ params }: PageProps) {
 						</div>
 					</div>
 
-					{/* Stats */}
 					<div className='grid grid-cols-2 gap-3'>
 						<div className='bg-charcoal-900/40 border border-white/5 rounded-2xl p-5'>
 							<div className='text-[9px] font-black text-charcoal-500 uppercase tracking-widest mb-1'>
@@ -240,9 +229,8 @@ export default async function DriverDetailPage({ params }: PageProps) {
 					</div>
 				</div>
 
-				{/* ── Right column ── */}
+				{/* Right column */}
 				<div className='lg:col-span-2 space-y-8'>
-					{/* Documents */}
 					<div>
 						<h2 className='text-xs font-black text-charcoal-500 uppercase tracking-[0.2em] mb-4'>
 							Verification Documents
@@ -263,7 +251,6 @@ export default async function DriverDetailPage({ params }: PageProps) {
 						</div>
 					</div>
 
-					{/* Recent orders */}
 					<div>
 						<h2 className='text-xs font-black text-charcoal-500 uppercase tracking-[0.2em] mb-4'>
 							Recent Deliveries

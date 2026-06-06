@@ -4,15 +4,14 @@ import { cookies } from 'next/headers'
 export async function createClient() {
   const cookieStore = await cookies()
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!url || !key) {
-    // Return a mock object to prevent "reading property of undefined" errors during build
-    return {
-      auth: { getUser: async () => ({ data: { user: null }, error: null }) },
-      from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null, error: null }) }) }) })
-    };
+    // During build, env vars are not available.
+    // Throw so callers can catch and return early rather than
+    // receiving an incompatible mock that breaks TypeScript.
+    throw new Error('Supabase credentials not configured.')
   }
 
   return createServerClient(
@@ -26,19 +25,16 @@ export async function createClient() {
         set(name, value, options) {
           try {
             cookieStore.set({ name, value, ...options })
-          } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+          } catch {
+            // Called from a Server Component — safe to ignore,
+            // middleware handles session refresh.
           }
         },
         remove(name, options) {
           try {
             cookieStore.set({ name, value: '', ...options })
-          } catch (error) {
-            // The `remove` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+          } catch {
+            // Same as above.
           }
         },
       },

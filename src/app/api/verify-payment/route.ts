@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { verifyAndFinalisePayment } from '@/services/payments.service'
 
-// Use the service role client to bypass RLS for payment finalisation
 function getAdminClient() {
 	return createClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -42,3 +41,4 @@ export async function POST(req: Request): Promise<NextResponse> {
 		)
 	}
 }
+

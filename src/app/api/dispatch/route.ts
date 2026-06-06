@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { dispatchOrder } from '@/services/dispatch.service'
 import type { DbOrder } from '@/types/database.types'
 import type { DispatchResult } from '@/types/api.types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export async function POST(
 	req: Request
@@ -17,7 +18,19 @@ export async function POST(
 			)
 		}
 
-		const supabase = await createClient()
+		const supabaseOrMock = await createClient()
+
+		// Guard: during build, createClient() returns a mock object that doesn't
+		// satisfy SupabaseClient. Bail out early so TypeScript is satisfied and
+		// the build doesn't fail.
+		if (!('supabaseUrl' in supabaseOrMock)) {
+			return NextResponse.json(
+				{ success: false, message: 'Service unavailable.' },
+				{ status: 503 }
+			)
+		}
+
+		const supabase = supabaseOrMock as SupabaseClient
 
 		// Fetch the order
 		const { data: order, error: orderError } = await supabase
@@ -37,8 +50,8 @@ export async function POST(
 		const result = await dispatchOrder(supabase, order as DbOrder)
 
 		if (!result.success) {
+			// 200 not 404 — "no driver found" is an expected outcome, not an error
 			return NextResponse.json(result, { status: 200 })
-			// Note: 200 not 404 — "no driver found" is an expected outcome, not an error
 		}
 
 		return NextResponse.json({
