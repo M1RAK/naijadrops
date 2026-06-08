@@ -112,7 +112,7 @@ export default function LoginPage() {
 			{/* Ambient background */}
 			<div className='absolute inset-0 pointer-events-none'>
 				<div className='absolute inset-0 bg-[radial-gradient(ellipse_at_50%_-10%,#10b98114,transparent_65%)]' />
-				<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-emerald-500/[0.04] blur-[120px] rounded-full' />
+				<div className='absolute bottom-0 left-1/2 -translate-x-1/2 w-175 h-87.5 bg-emerald-500/4 blur-[120px] rounded-full' />
 			</div>
 
 			<motion.div
@@ -157,7 +157,7 @@ export default function LoginPage() {
 					</AnimatePresence>
 				</div>
 
-				<div className='bg-white/[0.04] border border-white/[0.08] rounded-[1.75rem] p-6 shadow-2xl'>
+				<div className='bg-white/4 border border-white/8 rounded-[1.75rem] p-6 shadow-2xl'>
 					<AnimatePresence mode='wait'>
 						{resetSent ? (
 							<motion.div
@@ -219,11 +219,11 @@ export default function LoginPage() {
 
 								{mode !== 'reset' && (
 									<div className='flex items-center gap-3 py-1'>
-										<div className='h-px flex-1 bg-white/[0.08]' />
+										<div className='h-px flex-1 bg-white/8' />
 										<span className='text-charcoal-600 text-[11px] font-bold uppercase tracking-widest'>
 											or
 										</span>
-										<div className='h-px flex-1 bg-white/[0.08]' />
+										<div className='h-px flex-1 bg-white/8' />
 									</div>
 								)}
 
@@ -241,7 +241,7 @@ export default function LoginPage() {
 										onChange={(e) =>
 											setEmail(e.target.value)
 										}
-										className='w-full bg-charcoal-900/60 border border-white/[0.08] rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
+										className='w-full bg-charcoal-900/60 border border-white/8 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
 									/>
 								</div>
 
@@ -264,7 +264,7 @@ export default function LoginPage() {
 											onChange={(e) =>
 												setPassword(e.target.value)
 											}
-											className='w-full bg-charcoal-900/60 border border-white/[0.08] rounded-xl py-3.5 pl-11 pr-11 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
+											className='w-full bg-charcoal-900/60 border border-white/8 rounded-xl py-3.5 pl-11 pr-11 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
 										/>
 										<button
 											type='button'

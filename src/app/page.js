@@ -51,7 +51,7 @@ export default function LandingPage() {
       {/* Ambient background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,#10b98112,transparent_70%)]"></div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/[0.03] blur-[120px] rounded-full"></div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-250 h-150 bg-emerald-500/3 blur-[120px] rounded-full"></div>
       </div>
 
       {/* Modern Mini-Nav */}
@@ -83,7 +83,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
             <Globe size={12} className="animate-pulse" /> Precision Logistics· Kano, NG
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[1] mb-6 font-outfit">
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none mb-6 font-outfit">
             Logistics that moves <br/>
             <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-emerald-600 italic">at your speed.</span>
           </h1>
