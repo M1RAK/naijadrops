@@ -6,7 +6,6 @@ import {
 	DollarSign,
 	Activity,
 	AlertTriangle,
-	Users,
 	ExternalLink
 } from 'lucide-react'
 import Link from 'next/link'
@@ -20,13 +19,13 @@ export default async function OpsDashboard() {
 		const { admin } = await validateAdmin()
 		supabase = await createClient()
 
-		const { data: riders } = await supabase
+		const { count: onlineRiderCount } = await supabase
 			.from('riders')
-			.select('count')
+			.select('*', { count: 'exact', head: true })
 			.eq('operational_status', 'online')
-		const { data: activeOrders } = await supabase
+		const { count: activeOrderCount } = await supabase
 			.from('orders')
-			.select('count')
+			.select('*', { count: 'exact', head: true })
 			.in('status', ['assigned', 'picked_up', 'in_transit'])
 		const { data: escrowVolume } = await supabase
 			.from('orders')
@@ -41,7 +40,7 @@ export default async function OpsDashboard() {
 		const stats = [
 			{
 				label: 'Active Fleet',
-				value: riders?.[0]?.count || 0,
+				value: onlineRiderCount ?? 0,
 				icon: <Truck className='text-emerald-500' />,
 				trend: 'Riders on Grid'
 			},
@@ -53,7 +52,7 @@ export default async function OpsDashboard() {
 			},
 			{
 				label: 'Ops Traffic',
-				value: activeOrders?.[0]?.count || 0,
+				value: activeOrderCount ?? 0,
 				icon: <Activity className='text-amber-500' />,
 				trend: 'In-Flight Dispatches'
 			},

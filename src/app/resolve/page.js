@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { getUserRole, getRoleRedirectPath } from '@/utils/auth'
+import { getRoleRedirectPath } from '@/services/auth.service'
 
 export default async function ResolvePage() {
 	let supabase
@@ -15,10 +15,14 @@ export default async function ResolvePage() {
 	} = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
-	const { role } = await getUserRole(supabase)
+	const { data: profile } = await supabase
+		.from('users')
+		.select('role')
+		.eq('id', user.id)
+		.single()
 
-	if (role) {
-		redirect(getRoleRedirectPath(role))
+	if (profile?.role) {
+		redirect(getRoleRedirectPath(profile.role))
 	} else {
 		await supabase
 			.from('users')
