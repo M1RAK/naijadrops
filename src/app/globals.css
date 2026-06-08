@@ -11,7 +11,7 @@
   --color-emerald-800: #065f46;
   --color-emerald-900: #064e3b;
   --color-emerald-950: #022c22;
-  
+
   --color-charcoal-50: #fafafa;
   --color-charcoal-100: #f4f4f5;
   --color-charcoal-200: #e4e4e7;
@@ -35,8 +35,8 @@
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --safe-left: env(safe-area-inset-left, 0px);
     --safe-right: env(safe-area-inset-right, 0px);
-    --font-outfit: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
-    --font-inter: ui-sans-serif, system-ui, sans-serif;
+   --font-outfit: var(--font-outfit), "Trebuchet MS", system-ui, sans-serif;
+    --font-inter: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   }
 
   html, body {
@@ -74,7 +74,7 @@
   .glass-dark {
     @apply bg-charcoal-900/70 backdrop-blur-2xl border border-white/10;
   }
-  
+
   /* Aura Mesh Gradient */
   .aura-gradient {
     background: radial-gradient(circle at 0% 0%, var(--color-emerald-500) 0%, transparent 50%),
@@ -87,7 +87,7 @@
   .min-h-screen {
     min-height: 100dvh !important;
   }
-  
+
   .hide-scrollbar::-webkit-scrollbar {
       display: none;
   }

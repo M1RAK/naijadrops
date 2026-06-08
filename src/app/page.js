@@ -62,7 +62,7 @@ export default function LandingPage() {
           </div>
           <span className="text-white font-black text-lg tracking-tight font-outfit">NaijaDrops</span>
         </div>
-        
+
         <div className="hidden md:flex items-center gap-8 text-[11px] font-black uppercase tracking-widest text-charcoal-400">
           <a href="/pricing" className="hover:text-emerald-400 transition-colors">Pricing</a>
           <a href="/track" className="hover:text-emerald-400 transition-colors">Track Item</a>
@@ -81,11 +81,11 @@ export default function LandingPage() {
            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-            <Globe size={12} className="animate-pulse" /> Precision Logistics Â· Kano, NG
+            <Globe size={12} className="animate-pulse" /> Precision Logistics· Kano, NG
           </div>
           <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-[1] mb-6 font-outfit">
-            Logistics that moves <br/> 
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600 italic">at your speed.</span>
+            Logistics that moves <br/>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-400 to-emerald-600 italic">at your speed.</span>
           </h1>
           <p className="text-charcoal-400 font-medium max-w-2xl mx-auto text-lg md:text-xl leading-relaxed mb-16 px-4">
             Reliable, real-time dispatch for business owners and professional carriers across the city.
@@ -103,9 +103,9 @@ export default function LandingPage() {
             Start Dispatching Packages
             <ArrowRight size={24} className="group-hover:translate-x-1.5 transition-transform" />
           </motion.button>
-          
+
           <p className="text-charcoal-500 text-sm font-bold uppercase tracking-[0.2em]">
-            Launching in Kano â€” Join the pilot waitlist</p>
+            Launching in Kano. Join the pilot waitlist</p>
         </div>
 
         {/* Quick Stats / Trust */}
@@ -137,7 +137,7 @@ export default function LandingPage() {
       {/* Simple Footer */}
       <footer className="relative z-10 border-t border-white/5 py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-charcoal-600 text-sm">Â© 2026 NaijaDrops Technologies. All rights reserved.</div>
+          <div className="text-charcoal-600 text-sm">© 2026 NaijaDrops Technologies. All rights reserved.</div>
           <div className="flex gap-6 text-xs font-bold uppercase tracking-widest text-charcoal-500">
              <a href="/terms" className="hover:text-white">Terms</a>
              <a href="/privacy" className="hover:text-white">Privacy</a>

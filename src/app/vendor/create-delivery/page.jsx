@@ -510,7 +510,7 @@ export default function CreateDelivery() {
 											Estimated Fare
 										</div>
 										<div className='text-4xl font-black text-emerald-400 italic tracking-tighter'>
-											â‚¦{estimatedPrice.toLocaleString()}
+											₦{estimatedPrice.toLocaleString()}
 										</div>
 									</div>
 								</div>
@@ -615,7 +615,7 @@ export default function CreateDelivery() {
 									Mission Fare
 								</div>
 								<div className='text-5xl font-black text-white italic tracking-tighter'>
-									â‚¦{estimatedPrice.toLocaleString()}
+									₦{estimatedPrice.toLocaleString()}
 								</div>
 							</div>
 							<button
@@ -676,7 +676,7 @@ export default function CreateDelivery() {
 											Standard
 										</div>
 										<div className='text-2xl font-black text-white tracking-tighter'>
-											â‚¦{estimatedPrice.toLocaleString()}
+											₦{estimatedPrice.toLocaleString()}
 										</div>
 									</button>
 									<button
@@ -690,7 +690,7 @@ export default function CreateDelivery() {
 											Express (+30%)
 										</div>
 										<div className='text-2xl font-black text-white tracking-tighter'>
-											â‚¦
+											₦
 											{(
 												Math.ceil(
 													(estimatedPrice * 1.3) / 50

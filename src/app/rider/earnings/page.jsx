@@ -117,7 +117,7 @@ export default function RiderEarnings() {
 
 					<div className='mb-10'>
 						<span className='text-2xl font-black text-emerald-500 mr-2 italic'>
-							â‚¦
+							₦
 						</span>
 						<span className='text-7xl font-black text-white tracking-tighter italic font-outfit leading-none'>
 							{earningsData.total.toLocaleString()}
@@ -130,7 +130,7 @@ export default function RiderEarnings() {
 								Pending Clear
 							</div>
 							<div className='text-lg font-black text-white tracking-tight'>
-								â‚¦{earningsData.pending.toLocaleString()}
+								₦{earningsData.pending.toLocaleString()}
 							</div>
 						</div>
 						<div className='p-5 bg-charcoal-900/50 rounded-2xl border border-white/5 backdrop-blur-md'>
@@ -138,7 +138,7 @@ export default function RiderEarnings() {
 								Weekly Yield
 							</div>
 							<div className='text-lg font-black text-white tracking-tight'>
-								â‚¦{earningsData.weekly.toLocaleString()}
+								₦{earningsData.weekly.toLocaleString()}
 							</div>
 						</div>
 					</div>
@@ -178,13 +178,13 @@ export default function RiderEarnings() {
 										{new Date(
 											tx.created_at
 										).toLocaleDateString()}{' '}
-										â€¢ ID: {tx.id.slice(0, 6)}
+										• ID: {tx.id.slice(0, 6)}
 									</div>
 								</div>
 							</div>
 							<div className='text-right'>
 								<div className='text-xl font-black text-white italic tracking-tighter mb-1'>
-									+â‚¦
+									+₦
 									{Math.floor(
 										tx.agreed_price * 0.85
 									).toLocaleString()}

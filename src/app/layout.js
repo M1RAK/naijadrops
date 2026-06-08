@@ -1,5 +1,20 @@
 import './globals.css'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { Outfit, Inter } from 'next/font/google'
+
+const outfit = Outfit({
+	subsets: ['latin'],
+	variable: '--font-outfit',
+	weight: ['400', '700', '900'],
+	display: 'swap'
+})
+
+const inter = Inter({
+	subsets: ['latin'],
+	variable: '--font-inter',
+	weight: ['400', '700', '900'],
+	display: 'swap'
+})
 
 export const viewport = {
 	width: 'device-width',
@@ -32,7 +47,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
 	return (
-		<html lang='en'>
+		<html lang='en' className={outfit.variable}>
 			<body className='font-sans bg-charcoal-50 text-charcoal-900 antialiased overflow-x-hidden selection:bg-emerald-500 selection:text-white flex flex-col min-h-screen'>
 				{children}
 			</body>
