@@ -64,17 +64,29 @@ export async function getUserProfile(
 export async function ensureUserProfile(
 	supabase: SupabaseClient,
 	userId: string,
-	defaults: { role?: UserRole; full_name?: string } = {}
+	defaults: { role?: UserRole; name?: string | null } = {}
 ): Promise<void> {
-	await supabase.from('users').upsert(
-		{
-			id: userId,
-			role: defaults.role ?? 'vendor',
-			full_name: defaults.full_name ?? null
-		},
-		{ onConflict: 'id' }
-	)
-	// We don't throw here — if the profile already exists the upsert is a no-op
+	const { data: existing, error: readError } = await supabase
+		.from('users')
+		.select('id')
+		.eq('id', userId)
+		.maybeSingle()
+
+	if (readError) {
+		throw new Error(`Failed to check profile state: ${readError.message}`)
+	}
+
+	if (existing) return
+
+	const { error: insertError } = await supabase.from('users').insert({
+		id: userId,
+		role: defaults.role ?? 'vendor',
+		name: defaults.name ?? null
+	})
+
+	if (insertError && !insertError.message.includes('duplicate key value')) {
+		throw new Error(`Failed to create profile: ${insertError.message}`)
+	}
 }
 
 /**

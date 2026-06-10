@@ -1,68 +1,86 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { Loader2 } from "lucide-react";
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
+import { Loader2 } from 'lucide-react'
+import {
+	ensureUserProfile,
+	getRoleRedirectPath
+} from '@/services/auth.service'
+import { ensureVendorProfile } from '@/services/vendors.service'
 
 /**
  * Headless Role Selection
- * This page no longer shows UI. It instantly resolves the user's role 
- * from their session or metadata and sends them to their portal.
+ * This page resolves the user's role from their session or metadata and
+ * sends them to the matching portal.
  */
 export default function RoleSelectRedirect() {
-  const router = useRouter();
-  const supabase = createClient();
+	const router = useRouter()
+	const supabase = createClient()
 
-  useEffect(() => {
-    async function resolveAndRedirect() {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.replace("/auth/login");
-        return;
-      }
+	useEffect(() => {
+		async function resolveAndRedirect() {
+			const {
+				data: { user }
+			} = await supabase.auth.getUser()
 
-      // 1. Check if they already have a role in the DB
-      const { data: profile } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", user.id)
-        .single();
+			if (!user) {
+				router.replace('/auth/login')
+				return
+			}
 
-      if (profile?.role) {
-         if (profile.role === 'rider') router.replace("/rider");
-         else if (profile.role === 'admin') router.replace("/admin");
-         else router.replace("/dashboard");
-         return;
-      }
+			const { data: profile } = await supabase
+				.from('users')
+				.select('role')
+				.eq('id', user.id)
+				.single()
 
-      // 2. If no role in DB, check the choice they made on the landing page (sessionStorage)
-      const intendedRole = sessionStorage.getItem("nd_intended_role") || 'vendor';
+			if (!profile?.role) {
+				const intendedRole =
+					sessionStorage.getItem('nd_intended_role') || 'vendor'
 
-      // 3. Update the DB so they don't loop back here
-      await supabase.from("users").update({ 
-        role: intendedRole,
-        full_name: user.user_metadata?.full_name || user.email?.split('@')[0]
-      }).eq("id", user.id);
+				await ensureUserProfile(supabase, user.id, {
+					role: intendedRole,
+					name:
+						user.user_metadata?.full_name ||
+						user.email?.split('@')[0] ||
+						null
+				})
 
-      // 4. Initialize specific profile
-      if (intendedRole === "vendor") {
-        await supabase.from("vendors").upsert({ user_id: user.id, business_name: 'My Business' }, { onConflict: 'user_id' });
-        router.replace("/dashboard");
-      } else {
-        await supabase.from("riders").upsert({ user_id: user.id, approved: false }, { onConflict: 'user_id' });
-        router.replace("/rider");
-      }
-    }
+				if (intendedRole === 'vendor') {
+					await ensureVendorProfile(supabase, user.id, 'My Business')
+				} else {
+					await supabase.from('riders').upsert(
+						{
+							user_id: user.id,
+							approved: false
+						},
+						{ onConflict: 'user_id' }
+					)
+				}
+			}
 
-    resolveAndRedirect();
-  }, [router, supabase]);
+			const { data: refreshedProfile } = await supabase
+				.from('users')
+				.select('role')
+				.eq('id', user.id)
+				.single()
 
-  return (
-    <div className="min-h-screen bg-charcoal-950 flex flex-col items-center justify-center gap-4">
-      <Loader2 className="text-emerald-500 animate-spin" size={40} />
-      <p className="text-charcoal-500 font-black text-xs uppercase tracking-widest">Entering Network...</p>
-    </div>
-  );
+			router.replace(
+				getRoleRedirectPath(refreshedProfile?.role || 'vendor')
+			)
+		}
+
+		resolveAndRedirect()
+	}, [router, supabase])
+
+	return (
+		<div className='min-h-screen bg-charcoal-950 flex flex-col items-center justify-center gap-4'>
+			<Loader2 className='text-emerald-500 animate-spin' size={40} />
+			<p className='text-charcoal-500 font-black text-xs uppercase tracking-widest'>
+				Entering Network...
+			</p>
+		</div>
+	)
 }

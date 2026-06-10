@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/utils/supabase/client'
+import { ensureUserProfile } from '@/services/auth.service'
+import { ensureVendorProfile } from '@/services/vendors.service'
 import {
 	ArrowLeft,
 	Zap,
@@ -82,16 +84,16 @@ function Step3Content() {
 				return
 			}
 
-			const { data: vendorProfile } = await supabase
-				.from('vendors')
-				.select('id')
-				.eq('user_id', user.id)
-				.single()
+			await ensureUserProfile(supabase, user.id, {
+				role: 'vendor',
+				name: user.user_metadata?.full_name || user.email?.split('@')[0] || null
+			})
 
-			if (!vendorProfile)
-				throw new Error(
-					'Vendor profile not found. Please go back and try again.'
-				)
+			const vendorProfile = await ensureVendorProfile(
+				supabase,
+				user.id,
+				user.email?.split('@')[0] || 'My Business'
+			)
 
 			const { data: order, error: err } = await supabase
 				.from('orders')

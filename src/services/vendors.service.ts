@@ -53,21 +53,44 @@ export async function ensureVendorProfile(
 	userId: string,
 	businessName?: string
 ): Promise<DbVendor> {
+	const { data: existing, error: readError } = await supabase
+		.from('vendors')
+		.select('*')
+		.eq('user_id', userId)
+		.maybeSingle()
+
+	if (readError) {
+		throw new Error(`Failed to check vendor profile: ${readError.message}`)
+	}
+
+	if (existing) return existing as DbVendor
+
 	const { data, error } = await supabase
 		.from('vendors')
-		.upsert(
-			{
-				user_id: userId,
-				business_name: businessName ?? 'My Business'
-			},
-			{ onConflict: 'user_id' }
-		)
+		.insert({
+			user_id: userId,
+			business_name: businessName ?? 'My Business'
+		})
 		.select()
 		.single()
 
-	if (error || !data) {
-		throw new Error(`Failed to ensure vendor profile: ${error?.message}`)
+	if (error && !error.message.includes('duplicate key value')) {
+		throw new Error(`Failed to create vendor profile: ${error?.message}`)
 	}
 
-	return data as DbVendor
+	if (data) return data as DbVendor
+
+	const { data: refreshed, error: refreshError } = await supabase
+		.from('vendors')
+		.select('*')
+		.eq('user_id', userId)
+		.single()
+
+	if (refreshError || !refreshed) {
+		throw new Error(
+			`Failed to confirm vendor profile: ${refreshError?.message}`
+		)
+	}
+
+	return refreshed as DbVendor
 }

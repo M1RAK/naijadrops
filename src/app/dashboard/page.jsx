@@ -19,6 +19,8 @@ import {
 } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
+import { ensureUserProfile } from '@/services/auth.service'
+import { ensureVendorProfile } from '@/services/vendors.service'
 
 const KANO_CENTER = { lat: 12.0022, lng: 8.592 }
 
@@ -310,6 +312,11 @@ export default function DashboardPage() {
 		if (!u) return
 		setUser(u)
 
+		await ensureUserProfile(supabase, u.id, {
+			role: 'vendor',
+			name: u.user_metadata?.full_name || u.email?.split('@')[0] || null
+		})
+
 		const { data: profile } = await supabase
 			.from('users')
 			.select('name, avatar_url')
@@ -323,25 +330,11 @@ export default function DashboardPage() {
 			setIsProfileModalOpen(true)
 		}
 
-		// Get or create vendor profile
-		let { data: vendorProfile } = await supabase
-			.from('vendors')
-			.select('id')
-			.eq('user_id', u.id)
-			.single()
-
-		if (!vendorProfile) {
-			const { data: newVendor } = await supabase
-				.from('vendors')
-				.insert({
-					user_id: u.id,
-					business_name: u.email?.split('@')[0] || 'My Business'
-				})
-				.select('id')
-				.single()
-			vendorProfile = newVendor
-		}
-
+		const vendorProfile = await ensureVendorProfile(
+			supabase,
+			u.id,
+			u.email?.split('@')[0] || 'My Business'
+		)
 		if (!vendorProfile) return
 
 		const ACTIVE_STATUSES = [

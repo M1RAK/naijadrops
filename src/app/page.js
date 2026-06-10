@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { User, Truck, ArrowRight, Loader2, Search, MapPin, ShieldCheck, Globe } from "lucide-react";
+import { useRouter } from 'next/navigation'
+import { motion } from "framer-motion";
+import { ArrowRight, Loader2, Search, MapPin, ShieldCheck, Globe } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
-  const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const supabase = createClient();
   const router = useRouter();
