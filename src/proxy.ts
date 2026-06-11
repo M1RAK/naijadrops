@@ -2,58 +2,61 @@ import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request })
-  const { pathname } = request.nextUrl
+	let response = NextResponse.next({ request })
+	const { pathname } = request.nextUrl
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          response = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        }
-      }
-    }
-  )
+	const supabase = createServerClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+		{
+			cookies: {
+				getAll: () => request.cookies.getAll(),
+				setAll: (cookiesToSet) => {
+					cookiesToSet.forEach(({ name, value }) =>
+						request.cookies.set(name, value)
+					)
+					response = NextResponse.next({ request })
+					cookiesToSet.forEach(({ name, value, options }) =>
+						response.cookies.set(name, value, options)
+					)
+				}
+			}
+		}
+	)
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+	const {
+		data: { user }
+	} = await supabase.auth.getUser()
 
-  if (!user) {
-    const protectedPaths = [
-      '/dashboard',
-      '/rider',
-      '/vendor',
-      '/ops-terminal',
-      '/profile'
-    ]
-    if (protectedPaths.some(p => pathname.startsWith(p))) {
-      return NextResponse.redirect(new URL('/auth/login', request.url))
-    }
-    return response
-  }
+	if (!user) {
+		const protectedPaths = [
+			'/dashboard',
+			'/rider',
+			'/vendor',
+			'/ops-terminal',
+			'/profile',
+			'/send-package',
+			'/payment',
+			'/tracking'
+		]
+		if (protectedPaths.some((p) => pathname.startsWith(p))) {
+			return NextResponse.redirect(new URL('/auth/login', request.url))
+		}
+		return response
+	}
 
-  if (pathname.startsWith('/ops-terminal')) {
-    const isAdmin = user.email?.toLowerCase().endsWith('@naijadrops.tech')
-    if (!isAdmin) {
-      return new NextResponse(null, { status: 404 })
-    }
-  }
+	if (pathname.startsWith('/ops-terminal')) {
+		const isAdmin = user.email?.toLowerCase().endsWith('@naijadrops.tech')
+		if (!isAdmin) {
+			return new NextResponse(null, { status: 404 })
+		}
+	}
 
-  return response
+	return response
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
-  ]
+	matcher: [
+		'/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'
+	]
 }

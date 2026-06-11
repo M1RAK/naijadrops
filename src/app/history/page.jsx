@@ -14,13 +14,13 @@ export default async function HistoryHeadless() {
 	} = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
-	const { data: profile } = await supabase
-		.from('users')
-		.select('role')
-		.eq('id', user.id)
+	// Check rider profile first
+	const { data: rider } = await supabase
+		.from('riders')
+		.select('id')
+		.eq('user_id', user.id)
 		.single()
 
-	if (profile?.role === 'vendor') redirect('/vendor/history')
-	else if (profile?.role === 'rider') redirect('/rider/earnings')
-	else redirect('/resolve')
+	if (rider) redirect('/rider/earnings')
+	redirect('/vendor/history')
 }

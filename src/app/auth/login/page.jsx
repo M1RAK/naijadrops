@@ -2,18 +2,9 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-	Mail,
-	Lock,
-	ArrowRight,
-	Loader2,
-	Eye,
-	EyeOff,
-	AlertCircle
-} from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Loader2, AlertCircle } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
-
+import { useRouter } from 'next/navigation'
 
 function GoogleIcon() {
 	return (
@@ -39,103 +30,26 @@ function GoogleIcon() {
 }
 
 export default function LoginPage() {
-	const [mode, setMode] = useState('login') // 'login' | 'signup' | 'reset'
-	const [email, setEmail] = useState('')
-	const [password, setPassword] = useState('')
-	const [showPassword, setShowPassword] = useState(false)
-	const [loading, setLoading] = useState(false)
 	const [googleLoading, setGoogleLoading] = useState(false)
 	const [error, setError] = useState(null)
-	const [resetSent, setResetSent] = useState(false)
 	const supabase = createClient()
 	const router = useRouter()
-
-	async function handleSubmit(e) {
-		e.preventDefault()
-		setLoading(true)
-		setError(null)
-
-		if (mode === 'reset') {
-			const { error } = await supabase.auth.resetPasswordForEmail(email, {
-				redirectTo: `${window.location.origin}/auth/callback?next=/auth/update-password`
-			})
-			if (error) setError(error.message)
-			else setResetSent(true)
-			setLoading(false)
-			return
-		}
-
-		if (mode === 'login') {
-			const { data, error } = await supabase.auth.signInWithPassword({
-				email,
-				password
-			})
-			if (error) {
-				setError(
-					error.message === 'Invalid login credentials'
-						? 'Incorrect email or password.'
-						: error.message
-				)
-				setLoading(false)
-				return
-			}
-
-			// Let the central resolver handle smart routing based on the actual database role
-			router.replace('/resolve')
-			return
-		}
-
-		if (mode === 'signup') {
-			const { data, error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: {
-					emailRedirectTo: `${window.location.origin}/auth/callback`,
-					data: {
-						role:
-							sessionStorage.getItem('nd_intended_role') ||
-							'vendor'
-					}
-				}
-			})
-			if (error) setError(error.message)
-			else {
-				if (data.session) {
-					// Auto-login succeeded, go to resolver
-					router.replace('/resolve')
-				} else {
-					setError(
-						'Check your email to verify your account, then sign in.'
-					)
-				}
-			}
-			setLoading(false)
-		}
-	}
 
 	async function handleGoogle() {
 		setGoogleLoading(true)
 		setError(null)
-
-		// Get the choice they made on the landing page
-		const intendedRole =
-			sessionStorage.getItem('nd_intended_role') || 'vendor'
-
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: 'google',
 			options: {
 				redirectTo: `${window.location.origin}/auth/callback`,
-				queryParams: {
-					access_type: 'offline',
-					prompt: 'consent'
-				}
+				queryParams: { access_type: 'offline', prompt: 'consent' }
 			}
 		})
-
 		if (error) {
 			setError(error.message)
 			setGoogleLoading(false)
 		}
+		// On success the browser navigates away — no cleanup needed
 	}
 
 	return (
@@ -163,254 +77,69 @@ export default function LoginPage() {
 							NaijaDrops
 						</span>
 					</div>
-					<AnimatePresence mode='wait'>
-						<motion.div
-							key={mode}
-							initial={{ opacity: 0, y: 8 }}
-							animate={{ opacity: 1, y: 0 }}
-							exit={{ opacity: 0, y: -8 }}
-							transition={{ duration: 0.2 }}>
-							<h1 className='text-2xl font-black text-white tracking-tight'>
-								{mode === 'login'
-									? 'Welcome back'
-									: mode === 'signup'
-									? 'Create account'
-									: 'Reset password'}
-							</h1>
-							<p className='text-charcoal-500 text-sm mt-1 font-medium'>
-								{mode === 'login'
-									? 'Sign in to continue'
-									: mode === 'signup'
-									? 'Start sending packages today'
-									: "We'll send a reset link"}
-							</p>
-						</motion.div>
-					</AnimatePresence>
+					<motion.div
+						initial={{ opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.2 }}>
+						<h1 className='text-2xl font-black text-white tracking-tight'>
+							Welcome to NaijaDrops
+						</h1>
+						<p className='text-charcoal-500 text-sm mt-1 font-medium'>
+							Sign in to send or deliver packages
+						</p>
+					</motion.div>
 				</div>
 
 				<div className='bg-white/4 border border-white/8 rounded-[1.75rem] p-6 shadow-2xl'>
 					<AnimatePresence mode='wait'>
-						{resetSent ? (
-							<motion.div
-								key='sent'
-								initial={{ opacity: 0, scale: 0.95 }}
-								animate={{ opacity: 1, scale: 1 }}
-								className='text-center py-4'>
-								<div className='w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30'>
-									<Mail
-										className='text-emerald-400'
-										size={28}
+						<motion.div
+							key='login'
+							initial={{ opacity: 0, x: 12 }}
+							animate={{ opacity: 1, x: 0 }}
+							exit={{ opacity: 0, x: -12 }}
+							transition={{ duration: 0.2 }}
+							className='space-y-4'>
+							<button
+								onClick={handleGoogle}
+								disabled={googleLoading}
+								className='w-full flex items-center justify-center gap-3 py-4 bg-white hover:bg-gray-50 text-charcoal-900 font-semibold rounded-xl transition-all text-sm active:scale-[0.98] disabled:opacity-60 shadow-sm'>
+								{googleLoading ? (
+									<Loader2
+										className='animate-spin text-charcoal-400'
+										size={18}
 									/>
-								</div>
-								<h3 className='text-white font-bold text-lg mb-2'>
-									Check your email
-								</h3>
-								<p className='text-charcoal-400 text-sm mb-6 leading-relaxed'>
-									Reset link sent to{' '}
-									<span className='text-emerald-400 font-semibold'>
-										{email}
-									</span>
-								</p>
-								<button
-									onClick={() => {
-										setMode('login')
-										setResetSent(false)
-									}}
-									className='text-emerald-500 text-xs font-black uppercase tracking-widest hover:text-emerald-400 transition-colors'>
-									→ Back to sign in
-								</button>
-							</motion.div>
-						) : (
-							<motion.form
-								key={mode}
-								initial={{ opacity: 0, x: 12 }}
-								animate={{ opacity: 1, x: 0 }}
-								exit={{ opacity: 0, x: -12 }}
-								transition={{ duration: 0.2 }}
-								onSubmit={handleSubmit}
-								className='space-y-3'>
-								{/* Google */}
-								{mode !== 'reset' && (
-									<button
-										type='button'
-										onClick={handleGoogle}
-										disabled={googleLoading}
-										className='w-full flex items-center justify-center gap-3 py-3.5 bg-white hover:bg-gray-50 text-charcoal-900 font-semibold rounded-xl transition-all text-sm active:scale-[0.98] disabled:opacity-60 shadow-sm'>
-										{googleLoading ? (
-											<Loader2
-												className='animate-spin text-charcoal-400'
-												size={18}
-											/>
-										) : (
-											<GoogleIcon />
-										)}
-										Continue with Google
-									</button>
+								) : (
+									<GoogleIcon />
 								)}
+								Continue with Google
+							</button>
 
-								{mode !== 'reset' && (
-									<div className='flex items-center gap-3 py-1'>
-										<div className='h-px flex-1 bg-white/8' />
-										<span className='text-charcoal-600 text-[11px] font-bold uppercase tracking-widest'>
-											or
-										</span>
-										<div className='h-px flex-1 bg-white/8' />
-									</div>
-								)}
-
-								{/* Email */}
-								<div className='relative'>
-									<Mail
-										className='absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-600'
-										size={15}
-									/>
-									<input
-										type='email'
-										required
-										placeholder='Email address'
-										value={email}
-										onChange={(e) =>
-											setEmail(e.target.value)
-										}
-										className='w-full bg-charcoal-900/60 border border-white/8 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
-									/>
-								</div>
-
-								{/* Password */}
-								{mode !== 'reset' && (
-									<div className='relative'>
-										<Lock
-											className='absolute left-4 top-1/2 -translate-y-1/2 text-charcoal-600'
-											size={15}
+							<AnimatePresence>
+								{error && (
+									<motion.div
+										initial={{ opacity: 0, height: 0 }}
+										animate={{
+											opacity: 1,
+											height: 'auto'
+										}}
+										exit={{ opacity: 0, height: 0 }}
+										className='flex items-start gap-2.5 p-3 bg-red-500/10 border border-red-500/20 rounded-xl overflow-hidden'>
+										<AlertCircle
+											className='text-red-400 shrink-0 mt-0.5'
+											size={13}
 										/>
-										<input
-											type={
-												showPassword
-													? 'text'
-													: 'password'
-											}
-											required
-											placeholder='Password'
-											value={password}
-											onChange={(e) =>
-												setPassword(e.target.value)
-											}
-											className='w-full bg-charcoal-900/60 border border-white/8 rounded-xl py-3.5 pl-11 pr-11 text-white placeholder:text-charcoal-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 transition-all text-sm font-medium'
-										/>
-										<button
-											type='button'
-											onClick={() =>
-												setShowPassword(!showPassword)
-											}
-											className='absolute right-4 top-1/2 -translate-y-1/2 text-charcoal-600 hover:text-charcoal-300 transition-colors'>
-											{showPassword ? (
-												<EyeOff size={15} />
-											) : (
-												<Eye size={15} />
-											)}
-										</button>
-									</div>
+										<p className='text-red-400 text-xs font-medium leading-relaxed'>
+											{error}
+										</p>
+									</motion.div>
 								)}
-
-								{/* Error */}
-								<AnimatePresence>
-									{error && (
-										<motion.div
-											initial={{ opacity: 0, height: 0 }}
-											animate={{
-												opacity: 1,
-												height: 'auto'
-											}}
-											exit={{ opacity: 0, height: 0 }}
-											className='flex items-start gap-2.5 p-3 bg-red-500/10 border border-red-500/20 rounded-xl overflow-hidden'>
-											<AlertCircle
-												className='text-red-400 shrink-0 mt-0.5'
-												size={13}
-											/>
-											<p className='text-red-400 text-xs font-medium leading-relaxed'>
-												{error}
-											</p>
-										</motion.div>
-									)}
-								</AnimatePresence>
-
-								{/* Forgot password link */}
-								{mode === 'login' && (
-									<div className='text-right -mt-1'>
-										<button
-											type='button'
-											onClick={() => {
-												setMode('reset')
-												setError(null)
-											}}
-											className='text-charcoal-500 hover:text-emerald-400 text-xs font-medium transition-colors'>
-											Forgot password?
-										</button>
-									</div>
-								)}
-
-								{/* Submit */}
-								<button
-									type='submit'
-									disabled={loading}
-									className='w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-charcoal-950 font-black py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-[0_0_20px_rgba(16,185,129,0.3)] text-sm mt-1'>
-									{loading ? (
-										<Loader2
-											className='animate-spin'
-											size={18}
-										/>
-									) : (
-										<>
-											{mode === 'login'
-												? 'Sign In'
-												: mode === 'signup'
-												? 'Create Account'
-												: 'Send Reset Link'}
-											<ArrowRight
-												size={15}
-												className='ml-0.5'
-											/>
-										</>
-									)}
-								</button>
-
-								{/* Mode toggle */}
-								<p className='text-center text-charcoal-500 text-xs pt-1'>
-									{mode === 'login' ? (
-										<>
-											No account?{' '}
-											<button
-												type='button'
-												onClick={() => {
-													setMode('signup')
-													setError(null)
-												}}
-												className='text-emerald-500 font-bold hover:text-emerald-400 transition-colors'>
-												Sign up free
-											</button>
-										</>
-									) : (
-										<>
-											Already have an account?{' '}
-											<button
-												type='button'
-												onClick={() => {
-													setMode('login')
-													setError(null)
-												}}
-												className='text-emerald-500 font-bold hover:text-emerald-400 transition-colors'>
-												Sign in
-											</button>
-										</>
-									)}
-								</p>
-							</motion.form>
-						)}
+							</AnimatePresence>
+						</motion.div>
 					</AnimatePresence>
 				</div>
 
 				<p className='text-center mt-6 text-charcoal-700 text-[10px] font-bold uppercase tracking-[0.2em]'>
-					Secure· Encrypted· Kano-Ready
+					Secure · Encrypted · Kano-Ready
 				</p>
 			</motion.div>
 		</main>

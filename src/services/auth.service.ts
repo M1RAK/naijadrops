@@ -1,93 +1,65 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { UserRole } from '@/types/database.types'
-import type { UserProfile } from '@/types/domain.types'
+import type { DbUser, DbVendor, DbRider } from '@/types/database.types'
 
-// ─── Profile ──────────────────────────────────────────────────────────────────
+// ─── Profile shapes ───────────────────────────────────────────────────────────
+
+export interface UserPortals {
+	user: DbUser
+	vendor: DbVendor | null // always present after signup trigger
+	rider: DbRider | null // present only after onboarding
+	isApprovedRider: boolean
+	isPendingRider: boolean
+	isAdmin: boolean
+}
+
+// ─── Core profile fetch ───────────────────────────────────────────────────────
 
 /**
- * Fetch the full user profile including their role-specific sub-profile.
- *
- * This replaces getUserRole() in src/utils/auth.js.
- * Key improvement: vendor and rider sub-profiles are fetched in parallel
- * instead of sequentially.
+ * Fetch everything needed to route and render for the current user.
+ * Replaces the old role-based getUserProfile().
  *
  * Returns null if the user is not authenticated.
  */
-export async function getUserProfile(
+export async function getUserPortals(
 	supabase: SupabaseClient
-): Promise<UserProfile | null> {
+): Promise<UserPortals | null> {
 	const {
 		data: { user },
 		error: authError
 	} = await supabase.auth.getUser()
-
 	if (authError || !user) return null
 
-	// Fetch the unified users table row
-	const { data: userProfile, error: profileError } = await supabase
-		.from('users')
-		.select('*')
-		.eq('id', user.id)
-		.maybeSingle()
+	const [userResult, vendorResult, riderResult, adminResult] =
+		await Promise.all([
+			supabase.from('users').select('*').eq('id', user.id).single(),
+			supabase
+				.from('vendors')
+				.select('*')
+				.eq('user_id', user.id)
+				.single(),
+			supabase.from('riders').select('*').eq('user_id', user.id).single(),
+			supabase
+				.from('admin_users')
+				.select('id, is_active')
+				.eq('id', user.id)
+				.single()
+		])
 
-	if (profileError || !userProfile) return null
+	if (!userResult.data) return null
 
-	// Fetch vendor and rider sub-profiles in parallel — no sequential waterfall
-	const [vendorResult, riderResult] = await Promise.all([
-		userProfile.role === 'vendor'
-			? supabase
-					.from('vendors')
-					.select('*')
-					.eq('user_id', user.id)
-					.maybeSingle()
-			: Promise.resolve({ data: null }),
-		userProfile.role === 'rider'
-			? supabase
-					.from('riders')
-					.select('*')
-					.eq('user_id', user.id)
-					.maybeSingle()
-			: Promise.resolve({ data: null })
-	])
+	const rider = riderResult.data as DbRider | null
 
 	return {
-		...userProfile,
-		vendor: vendorResult.data,
-		rider: riderResult.data
-	} as UserProfile
-}
-
-/**
- * Ensure a user row exists in the public users table.
- * Called after OAuth sign-in where the trigger may not have fired yet.
- */
-export async function ensureUserProfile(
-	supabase: SupabaseClient,
-	userId: string,
-	defaults: { role?: UserRole; name?: string | null } = {}
-): Promise<void> {
-	const { data: existing, error: readError } = await supabase
-		.from('users')
-		.select('id')
-		.eq('id', userId)
-		.maybeSingle()
-
-	if (readError) {
-		throw new Error(`Failed to check profile state: ${readError.message}`)
-	}
-
-	if (existing) return
-
-	const { error: insertError } = await supabase.from('users').insert({
-		id: userId,
-		role: defaults.role ?? 'vendor',
-		name: defaults.name ?? null
-	})
-
-	if (insertError && !insertError.message.includes('duplicate key value')) {
-		throw new Error(`Failed to create profile: ${insertError.message}`)
+		user: userResult.data as DbUser,
+		vendor: vendorResult.data as DbVendor | null,
+		rider,
+		isApprovedRider: rider?.status === 'approved',
+		isPendingRider: rider?.status === 'pending',
+		isAdmin: !!adminResult.data?.is_active
 	}
 }
+
+// ─── Profile mutations ────────────────────────────────────────────────────────
 
 /**
  * Update the user's display name and avatar.
@@ -105,29 +77,48 @@ export async function updateUserProfile(
 	if (error) throw new Error(`Failed to update profile: ${error.message}`)
 }
 
-// ─── Routing ──────────────────────────────────────────────────────────────────
-
 /**
- * Returns the correct redirect path for a given role.
- * Used by /resolve and the auth callback.
+ * Ensure a vendor profile exists for this user.
+ * Safe to call multiple times — upsert is a no-op if the row exists.
+ * In practice the auth trigger handles this, but this is the fallback.
  */
-export function getRoleRedirectPath(role: UserRole): string {
-	const paths: Record<UserRole, string> = {
-		admin: '/ops-terminal/dashboard',
-		vendor: '/dashboard',
-		rider: '/rider'
+export async function ensureVendorProfile(
+	supabase: SupabaseClient,
+	userId: string,
+	businessName?: string
+): Promise<DbVendor> {
+	const { data, error } = await supabase
+		.from('vendors')
+		.upsert(
+			{ user_id: userId, business_name: businessName ?? null },
+			{ onConflict: 'user_id' }
+		)
+		.select()
+		.single()
+
+	if (error || !data) {
+		throw new Error(`Failed to ensure vendor profile: ${error?.message}`)
 	}
-	return paths[role] ?? '/resolve'
+	return data as DbVendor
 }
 
-// ─── Admin ────────────────────────────────────────────────────────────────────
+// ─── Routing helper ───────────────────────────────────────────────────────────
 
 /**
- * Validate that the current user is an active admin.
- * Checks both email domain and the admin_users DB table.
- *
- * This is a server-side only function — it uses the server supabase client.
- * Throws if the user is not authorised.
+ * Returns the correct redirect path after login.
+ * Used by /auth/resolve and the auth callback.
+ */
+export function getPortalPath(portals: UserPortals): string {
+	if (portals.isAdmin) return '/ops-terminal/dashboard'
+	if (portals.rider) return '/rider'
+	return '/dashboard'
+}
+
+// ─── Admin validation ─────────────────────────────────────────────────────────
+
+/**
+ * Server-side only. Validates the current user is an active admin.
+ * Throws if not authorised — callers should catch and redirect.
  */
 export async function validateAdminUser(
 	supabase: SupabaseClient,
@@ -142,12 +133,10 @@ export async function validateAdminUser(
 		throw new Error('Unauthorized — authentication required')
 	}
 
-	// Domain check
 	if (!user.email?.toLowerCase().endsWith('@naijadrops.tech')) {
 		throw new Error('Unauthorized — corporate domain required')
 	}
 
-	// DB check — no hardcoded emails
 	const { data: adminRecord, error: dbError } = await supabase
 		.from('admin_users')
 		.select('*')

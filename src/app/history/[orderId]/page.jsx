@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 
-export default async function HistoryHeadless() {
+export default async function HistoryOrderHeadless() {
 	let supabase
 	try {
 		supabase = await createClient()
@@ -14,13 +14,12 @@ export default async function HistoryHeadless() {
 	} = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
-	const { data: profile } = await supabase
-		.from('users')
-		.select('role')
-		.eq('id', user.id)
+	const { data: rider } = await supabase
+		.from('riders')
+		.select('id')
+		.eq('user_id', user.id)
 		.single()
 
-	if (profile?.role === 'vendor') redirect('/vendor/history')
-	else if (profile?.role === 'rider') redirect('/rider/earnings')
-	else redirect('/resolve')
+	if (rider) redirect('/rider/earnings')
+	redirect('/vendor/history')
 }

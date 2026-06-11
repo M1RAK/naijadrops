@@ -34,11 +34,12 @@ export async function GET(request) {
 			} = await supabase.auth.exchangeCodeForSession(code)
 
 			if (!error && user) {
+				// next param is used by the reset-password flow
 				if (next) return NextResponse.redirect(`${origin}${next}`)
-				return NextResponse.redirect(`${origin}/resolve`)
+				return NextResponse.redirect(`${origin}/auth/resolve`)
 			}
 		} catch (err) {
-			console.error('Callback error:', err)
+			console.error('[auth/callback] error:', err)
 		}
 	}
 
