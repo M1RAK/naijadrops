@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { getUserPortals } from '@/services/auth.service'
 
 export default async function DashboardLayout({ children }) {
 	let supabase
@@ -14,14 +15,9 @@ export default async function DashboardLayout({ children }) {
 	} = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
-	const { data: profile } = await supabase
-		.from('users')
-		.select('role')
-		.eq('id', user.id)
-		.single()
-
-	if (profile?.role === 'rider') redirect('/rider')
-	if (profile?.role === 'admin') redirect('/ops-terminal/dashboard')
+	const portals = await getUserPortals(supabase)
+	if (portals?.isAdmin) redirect('/ops-terminal/dashboard')
+	if (portals?.rider) redirect('/rider')
 
 	return <>{children}</>
 }

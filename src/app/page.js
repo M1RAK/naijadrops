@@ -18,6 +18,21 @@ export default function LandingPage() {
 	const supabase = createClient()
 	const router = useRouter()
 
+	async function handleGoogleSignIn() {
+		const { error } = await supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				redirectTo: `${window.location.origin}/auth/callback`,
+				queryParams: { access_type: 'offline', prompt: 'consent' }
+			}
+		})
+
+		if (error) {
+			console.error('Google sign-in failed:', error.message)
+			router.push('/auth/login')
+		}
+	}
+
 	// Already logged in → skip landing
 	useEffect(() => {
 		async function checkExistingAuth() {
@@ -59,7 +74,7 @@ export default function LandingPage() {
 					</span>
 				</div>
 				<button
-					onClick={() => router.push('/auth/login')}
+					onClick={handleGoogleSignIn}
 					className='px-5 py-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-white text-[11px] font-black uppercase tracking-widest'>
 					Sign In
 				</button>
@@ -92,7 +107,7 @@ export default function LandingPage() {
 					<motion.button
 						whileHover={{ scale: 1.05 }}
 						whileTap={{ scale: 0.98 }}
-						onClick={() => router.push('/auth/login')}
+						onClick={handleGoogleSignIn}
 						className='group relative bg-emerald-500 hover:bg-emerald-400 text-charcoal-950 px-12 py-6 rounded-3xl font-black text-xl uppercase tracking-wider shadow-[0_0_40px_rgba(16,185,129,0.3)] transition-all flex items-center gap-3'>
 						Get Started
 						<ArrowRight
