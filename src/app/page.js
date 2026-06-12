@@ -1,15 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Loader2, MapPin, ShieldCheck, Search, Globe } from 'lucide-react'
+import { ArrowRight, MapPin, ShieldCheck, Search, Globe } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
-	const [checking, setChecking] = useState(true)
+  	const [isLoggedIn, setIsLoggedIn] = useState(false)
 	const supabase = createClient()
 	const router = useRouter()
+
+  	useEffect(() => {
+		supabase.auth.getUser().then(({ data: { user } }) => {
+			setIsLoggedIn(!!user)
+		})
+	}, [])
 
 	async function handleGoogleSignIn() {
 		const { error } = await supabase.auth.signInWithOAuth({
@@ -24,26 +30,6 @@ export default function LandingPage() {
 			console.error('Google sign-in failed:', error.message)
 			router.push('/auth/login')
 		}
-	}
-
-	// Already logged in → skip landing
-	useEffect(() => {
-		async function checkExistingAuth() {
-			const {
-				data: { user }
-			} = await supabase.auth.getUser()
-			if (user) router.replace('/auth/resolve')
-			setChecking(false)
-		}
-		checkExistingAuth()
-	}, [router, supabase])
-
-	if (checking) {
-		return (
-			<div className='min-h-screen bg-charcoal-950 flex items-center justify-center'>
-				<Loader2 className='text-emerald-500 animate-spin' size={32} />
-			</div>
-		)
 	}
 
 	return (
@@ -67,9 +53,9 @@ export default function LandingPage() {
 					</span>
 				</div>
 				<button
-					onClick={handleGoogleSignIn}
+					onClick={isLoggedIn ? () => router.push('/auth/resolve') : handleGoogleSignIn}
 					className='px-5 py-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-white text-[11px] font-black uppercase tracking-widest'>
-					Sign In
+				{isLoggedIn ? 'Go to Dashboard' : 'Sign In'}
 				</button>
 			</nav>
 
