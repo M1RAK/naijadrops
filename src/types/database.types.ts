@@ -1,6 +1,5 @@
 // ─── Enums ──────────────────────────────────────────────────────────────────
 
-export type UserRole = 'vendor' | 'rider' | 'admin'
 export type VehicleType = 'bike' | 'car' | 'van'
 export type RiderStatus = 'pending' | 'approved' | 'rejected' | 'paused'
 export type OperationalStatus = 'online' | 'offline' | 'awaiting_payment'
@@ -17,20 +16,16 @@ export type OrderStatus =
 export type PaymentStatus = 'unpaid' | 'authorized' | 'voided' | 'released'
 
 // ─── Table row shapes ────────────────────────────────────────────────────────
-// These match your Supabase columns exactly.
+// These match the Supabase schema exactly.
 // Rule: never add computed/joined fields here — use domain.types.ts for those.
 
 export interface DbUser {
 	id: string
-	role: UserRole
-	// NOTE: codebase uses both 'name' and 'full_name' in different places.
-	// 'name' is the actual column in the users table.
-	// 'full_name' comes from user_metadata on the auth.users object.
-	// Using both here until the column naming is resolved.
+	// NOTE: role column was removed. Capabilities are derived from
+	// which profile rows exist (vendors / riders / admin_users) —
+	// see auth.service.ts getUserPortals().
 	name: string | null
-	full_name: string | null
 	avatar_url: string | null
-	active_mode: string | null
 	created_at: string
 }
 
@@ -60,11 +55,8 @@ export interface DbRider {
 	license_url: string | null
 	vehicle_photo_url: string | null
 	phone: string | null
-	// NOTE: full_name here is a denormalised copy stored directly on the riders
-	// row (set during onboarding). Separate from users.name.
 	full_name: string | null
 	rejection_reason: string | null
-	// Set when the rider submits their onboarding documents
 	documents_submitted_at: string | null
 	created_at: string
 }
@@ -72,10 +64,10 @@ export interface DbRider {
 export interface DbOrder {
 	id: string
 	vendor_id: string
-	rider_id: string | null
+	rider_id: string | null // → riders.id
+	rider_user_id: string | null // → users.id (denormalised, synced by trigger)
 	status: OrderStatus
 	payment_status: PaymentStatus
-	negotiation_status: string | null
 	pickup_name: string
 	pickup_lat: number
 	pickup_lng: number
@@ -91,7 +83,6 @@ export interface DbOrder {
 	notify_receiver: boolean
 	agreed_price: number
 	delivery_pin: string | null
-	voice_note_url: string | null
 	pickup_details: string | null
 	dropoff_details: string | null
 	scheduled_at: string | null
@@ -111,28 +102,10 @@ export interface DbAdminUser {
 	created_at: string
 }
 
-export interface DbMessage {
-	id: string
-	order_id: string
-	sender_id: string
-	text: string
-	type: 'text' | 'system'
-	created_at: string
-}
-
-export interface DbBid {
-	id: string
-	order_id: string
-	rider_id: string
-	amount: number
-	status: 'pending' | 'accepted' | 'rejected'
-	created_at: string
-}
-
 export interface DbReview {
 	id: string
 	order_id: string
-	driver_id: string
+	rider_id: string
 	user_id: string
 	rating: number
 	feedback: string | null
@@ -146,14 +119,6 @@ export interface DbAdminActionLog {
 	target_type: string
 	target_id: string | null
 	details: Record<string, unknown>
-	created_at: string
-}
-
-export interface DbRiderLocation {
-	id: string
-	rider_id: string
-	lat: number
-	lng: number
 	created_at: string
 }
 

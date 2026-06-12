@@ -13,13 +13,11 @@ import {
 	Menu,
 	X,
 	Phone,
-	FileText,
 	History as HistoryIcon,
 	Camera
 } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { ensureUserProfile } from '@/services/auth.service'
 import { ensureVendorProfile } from '@/services/vendors.service'
 
 const KANO_CENTER = { lat: 12.0022, lng: 8.592 }
@@ -89,7 +87,6 @@ function ProfileModal({ isOpen, onClose, onSave, currentName, currentAvatar }) {
 					</p>
 				</div>
 
-				{/* Avatar upload */}
 				<div className='flex flex-col items-center gap-4'>
 					<div className='relative group'>
 						<div className='w-24 h-24 rounded-full bg-charcoal-950 border-2 border-white/10 overflow-hidden flex items-center justify-center shadow-2xl'>
@@ -227,9 +224,10 @@ function MenuModal({ isOpen, onClose, onLogout, onProfile, userAvatar }) {
 						<span className='font-bold text-sm'>Order History</span>
 					</button>
 
+					{/* Become a Rider — separate onboarding flow, not a role switch */}
 					<button
 						onClick={() => {
-							router.push('/driver/onboarding')
+							router.push('/rider/onboarding')
 							onClose()
 						}}
 						className='w-full flex items-center gap-4 p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 hover:bg-emerald-500/10 text-emerald-500 transition-all group text-left'>
@@ -238,7 +236,7 @@ function MenuModal({ isOpen, onClose, onLogout, onProfile, userAvatar }) {
 						</div>
 						<div>
 							<div className='font-black text-sm uppercase tracking-tight'>
-								Become a Driver
+								Become a Rider
 							</div>
 							<div className='text-[9px] font-bold opacity-60 uppercase tracking-widest'>
 								Verify & Earn
@@ -312,11 +310,7 @@ export default function DashboardPage() {
 		if (!u) return
 		setUser(u)
 
-		await ensureUserProfile(supabase, u.id, {
-			role: 'vendor',
-			name: u.user_metadata?.full_name || u.email?.split('@')[0] || null
-		})
-
+		// users row is guaranteed by the DB trigger at signup — just read it
 		const { data: profile } = await supabase
 			.from('users')
 			.select('name, avatar_url')
@@ -327,14 +321,12 @@ export default function DashboardPage() {
 			setDisplayName(profile.name.split(' ')[0])
 			setAvatarUrl(profile.avatar_url || '')
 		} else {
+			// No name set yet — open profile modal to collect it
 			setIsProfileModalOpen(true)
 		}
 
-		const vendorProfile = await ensureVendorProfile(
-			supabase,
-			u.id,
-			u.email?.split('@')[0] || 'My Business'
-		)
+		// vendors row is also guaranteed by the trigger
+		const vendorProfile = await ensureVendorProfile(supabase, u.id)
 		if (!vendorProfile) return
 
 		const ACTIVE_STATUSES = [
