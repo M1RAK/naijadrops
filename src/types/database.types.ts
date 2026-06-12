@@ -68,6 +68,7 @@ export interface DbOrder {
 	rider_user_id: string | null // → users.id (denormalised, synced by trigger)
 	status: OrderStatus
 	payment_status: PaymentStatus
+	negotiation_status: string | null
 	pickup_name: string
 	pickup_lat: number
 	pickup_lng: number

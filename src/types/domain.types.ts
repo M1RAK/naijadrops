@@ -13,7 +13,13 @@ export interface LocationPoint {
 
 /** Rider row + their auth user record */
 export interface RiderWithUser extends DbRider {
-	users: (Pick<DbUser, 'full_name'> & { email: string | null }) | null
+	users:
+		| {
+				full_name: string | null
+				email: string | null
+				phone: string | null
+		  }
+		| null
 }
 
 /** Order row + the rider's profile (for vendor tracking view) */

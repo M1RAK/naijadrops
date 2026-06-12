@@ -94,30 +94,6 @@ export async function ensureUserProfile(
   }
 }
 
-/**
- * Ensure a vendor profile exists for this user.
- * Safe to call multiple times — upsert is a no-op if the row exists.
- */
-export async function ensureVendorProfile(
-  supabase: SupabaseClient,
-  userId: string,
-  businessName?: string
-): Promise<DbVendor> {
-  const { data, error } = await supabase
-    .from('vendors')
-    .upsert(
-      { user_id: userId, business_name: businessName ?? null },
-      { onConflict: 'user_id' }
-    )
-    .select()
-    .single()
-
-  if (error || !data) {
-    throw new Error(`Failed to ensure vendor profile: ${error?.message}`)
-  }
-  return data as DbVendor
-}
-
 // ─── Routing helpers ──────────────────────────────────────────────────────────
 
 /**
