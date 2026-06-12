@@ -27,7 +27,10 @@ export default async function OpsOrdersPage() {
         vehicle_type,
         plate_number
       ),
-      users (full_name, phone)
+      vendors (
+        business_name,
+        users (full_name, phone)
+      )
     `
 		)
 		.in('status', [

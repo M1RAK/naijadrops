@@ -14,8 +14,8 @@ export async function forceCancelOrder(orderId, reason = 'Ops Override') {
 			.update({
 				status: 'cancelled',
 				payment_status: 'voided',
-				negotiation_status: 'terminated',
-				rider_id: null
+				rider_id: null,
+				rider_user_id: null
 			})
 			.eq('id', orderId)
 

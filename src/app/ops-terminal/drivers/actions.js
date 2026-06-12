@@ -3,18 +3,17 @@
 import { validateAdmin, logAdminAction } from '@/utils/admin'
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+	approveRider as approveRiderService,
+	deactivateRider as deactivateRiderService
+} from '@/services/riders.service'
 
 export async function approveRider(riderId) {
 	try {
 		const { admin } = await validateAdmin()
 		const supabase = await createClient()
 
-		const { error } = await supabase
-			.from('riders')
-			.update({ approved: true, status: 'approved' })
-			.eq('user_id', riderId)
-
-		if (error) throw error
+		await approveRiderService(supabase, riderId)
 
 		await logAdminAction(admin.id, 'RIDER_APPROVAL', 'rider', riderId, {
 			status: 'approved'
@@ -33,12 +32,7 @@ export async function deactivateRider(riderId) {
 		const { admin } = await validateAdmin()
 		const supabase = await createClient()
 
-		const { error } = await supabase
-			.from('riders')
-			.update({ approved: false, status: 'pending' })
-			.eq('user_id', riderId)
-
-		if (error) throw error
+		await deactivateRiderService(supabase, riderId)
 
 		await logAdminAction(admin.id, 'RIDER_DEACTIVATION', 'rider', riderId, {
 			status: 'paused'

@@ -6,11 +6,8 @@ import { forceCancelOrder } from './actions'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
 	Package,
-	Truck,
 	Navigation,
-	AlertOctagon,
 	XCircle,
-	Info,
 	Loader2,
 	Map as MapIcon
 } from 'lucide-react'
@@ -64,7 +61,7 @@ export default function LiveOrdersFeed({ initialOrders }) {
 					const { data: updatedOrder } = await supabase
 						.from('orders')
 						.select(
-							'*, riders(user_id, users(full_name)), users(full_name, phone)'
+							'*, riders(user_id, users(full_name)), vendors(business_name, users(full_name, phone))'
 						)
 						.eq('id', payload.new.id || payload.old.id)
 						.single()
@@ -184,7 +181,7 @@ export default function LiveOrdersFeed({ initialOrders }) {
 										{STATUS_CONFIG[order.status]?.label ||
 											order.status}
 									</div>
-									<div className='text-sm font-black text-white truncate max-w-[150px]'>
+									<div className='text-sm font-black text-white truncate max-w-37.5'>
 										ID: {order.id.slice(0, 8)}
 									</div>
 								</div>

@@ -19,10 +19,10 @@ export async function POST(request) {
 
 		await adminSupabase.from('admin_action_logs').insert({
 			admin_id: user.id,
-			user_id: driverId,
-			table_name: 'riders',
 			action: 'approve',
-			changes: { status: 'approved', approved: true }
+			target_type: 'rider',
+			target_id: driverId,
+			details: { status: 'approved', approved: true }
 		})
 
 		return NextResponse.json({ success: true })

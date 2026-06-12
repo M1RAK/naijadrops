@@ -2,8 +2,6 @@ import { validateAdmin } from '@/utils/admin'
 import { createClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import {
-	ShieldCheck,
-	ShieldAlert,
 	Truck,
 	Star,
 	Phone,
@@ -103,7 +101,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 		.select(
 			'id, status, agreed_price, created_at, pickup_name, dropoff_name'
 		)
-		.eq('rider_id', params.driverId)
+		.eq('rider_user_id', params.driverId)
 		.order('created_at', { ascending: false })
 		.limit(5)
 

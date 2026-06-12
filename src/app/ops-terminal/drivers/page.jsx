@@ -1,7 +1,7 @@
 import { validateAdmin } from '@/utils/admin'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { UserX, FileText, Star, ShieldCheck } from 'lucide-react'
+import {  FileText, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import DriverActions from './DriverActions'
 import InviteDriverButton from './InviteDriverButton'
@@ -77,13 +77,13 @@ export default async function AdminDriversPage() {
 									</p>
 								</div>
 								<div className='flex gap-2'>
-									{rider.driver_license_url && (
+									{rider.license_url && (
 										<FileText
 											size={18}
 											className='text-blue-500'
 										/>
 									)}
-									{rider.government_id_url && (
+									{rider.id_card_url && (
 										<ShieldCheck
 											size={18}
 											className='text-emerald-500'

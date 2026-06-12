@@ -3,7 +3,7 @@ import { createClient } from '@/utils/supabase/server'
 import { Clock, ShieldAlert, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
-export default async function RiderLayout({ children }) {
+export default async function RiderWorkspaceLayout({ children }) {
 	let supabase
 	try {
 		supabase = await createClient()
@@ -11,9 +11,7 @@ export default async function RiderLayout({ children }) {
 		redirect('/auth/login')
 	}
 
-	const {
-		data: { user }
-	} = await supabase.auth.getUser()
+	const { data: { user } } = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
 	const { data: rider } = await supabase
@@ -22,6 +20,7 @@ export default async function RiderLayout({ children }) {
 		.eq('user_id', user.id)
 		.single()
 
+	// Safe now — /rider/onboarding is outside this layout's subtree
 	if (!rider) redirect('/rider/onboarding')
 
 	const isApproved = rider.status === 'approved'
@@ -38,27 +37,16 @@ export default async function RiderLayout({ children }) {
 				<div className='flex gap-4 text-[10px] font-black uppercase tracking-widest text-charcoal-500'>
 					{isApproved && (
 						<>
-							<a
-								href='/rider/dashboard'
-								className='hover:text-emerald-400'>
-									Dashboard
-								</a>
-								<Link href='/rider/active-job' className='hover:text-emerald-400'>
-									Active
-								</Link>
-								<Link href='/rider/earnings' className='hover:text-emerald-400'>
-									Money
-								</Link>
-								<Link href='/rider/profile' className='hover:text-emerald-400'>
-									Account
-								</Link>
-							</>
-						)}
-					</div>
+							<a href='/rider/dashboard' className='hover:text-emerald-400'>Dashboard</a>
+							<Link href='/rider/active-job' className='hover:text-emerald-400'>Active</Link>
+							<Link href='/rider/earnings' className='hover:text-emerald-400'>Money</Link>
+							<Link href='/rider/profile' className='hover:text-emerald-400'>Account</Link>
+						</>
+					)}
+				</div>
 			</nav>
 
 			<main className='flex-1 w-full max-w-lg mx-auto relative px-5 py-4'>
-				{/* Pending toast */}
 				{isPending && (
 					<div className='fixed top-20 inset-x-0 z-100 flex justify-center pointer-events-none'>
 						<div className='bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md px-6 py-3 rounded-full text-emerald-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2 shadow-glow'>
@@ -68,7 +56,6 @@ export default async function RiderLayout({ children }) {
 					</div>
 				)}
 
-				{/* Rejected / Paused hard lock */}
 				{(isRejected || isPaused) && (
 					<div className='fixed inset-0 z-100 bg-charcoal-950 flex flex-col items-center justify-center p-8 text-center'>
 						<div className='w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mb-8'>
@@ -82,14 +69,9 @@ export default async function RiderLayout({ children }) {
 						</p>
 						<div className='bg-red-500/5 border border-red-500/20 rounded-2xl p-5 mb-8 w-full'>
 							<div className='flex items-start gap-3 text-left'>
-								<AlertTriangle
-									className='text-red-400 shrink-0 mt-0.5'
-									size={16}
-								/>
+								<AlertTriangle className='text-red-400 shrink-0 mt-0.5' size={16} />
 								<div>
-									<div className='text-white text-sm font-bold mb-1'>
-										Reason for restriction:
-									</div>
+									<div className='text-white text-sm font-bold mb-1'>Reason for restriction:</div>
 									<p className='text-charcoal-400 text-xs leading-relaxed'>
 										{rider.rejection_reason ||
 											'Your profile requires further verification or violated terms of service. Please contact our Kano operations center.'}
@@ -97,9 +79,7 @@ export default async function RiderLayout({ children }) {
 								</div>
 							</div>
 						</div>
-						<a
-							href='/auth/login'
-							className='w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-sm block text-center'>
+						<a href='/auth/login' className='w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-sm block text-center'>
 							Sign Out
 						</a>
 					</div>
