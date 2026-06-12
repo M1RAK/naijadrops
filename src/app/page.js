@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
 	ArrowRight,
-	Loader2,
 	MapPin,
 	ShieldCheck,
 	Search,
@@ -14,7 +12,6 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
-	const [checking, setChecking] = useState(true)
 	const supabase = createClient()
 	const router = useRouter()
 

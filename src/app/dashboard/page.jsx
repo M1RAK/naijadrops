@@ -14,7 +14,8 @@ import {
 	X,
 	Phone,
 	History as HistoryIcon,
-	Camera
+	Camera,
+  Home
 } from 'lucide-react'
 import Map, { Marker } from 'react-map-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -473,6 +474,11 @@ export default function DashboardPage() {
 								</span>
 							</div>
 						)}
+						<button
+							onClick={() => router.push('/')}
+							className='w-12 h-12 bg-charcoal-900 border border-white/10 rounded-2xl text-white flex items-center justify-center hover:bg-white/5 transition-all shadow-xl'>
+							<Home size={20} />
+						</button>
 						<button
 							onClick={() => setIsMenuOpen(true)}
 							className='w-12 h-12 bg-charcoal-900 border border-white/10 rounded-2xl text-white flex items-center justify-center hover:bg-white/5 transition-all shadow-xl'>
