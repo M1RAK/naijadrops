@@ -44,7 +44,7 @@ function ConfirmContent() {
 				const { data: riderRow } = await supabase
 					.from('riders')
 					.select('*')
-					.eq('user_id', o.rider_id)
+					.eq('id', o.rider_id)
 					.single()
 
 				if (riderRow) {
@@ -52,7 +52,7 @@ function ConfirmContent() {
 					const { data: userRow } = await supabase
 						.from('users')
 						.select('full_name, email')
-						.eq('id', o.rider_id)
+						.eq('id', riderRow.user_id)
 						.single()
 
 					setRider({
@@ -72,6 +72,7 @@ function ConfirmContent() {
 			.from('orders')
 			.update({
 				rider_id: null,
+				rider_user_id: null,
 				status: 'pending'
 			})
 			.eq('id', orderId)
@@ -83,11 +84,11 @@ function ConfirmContent() {
 		email: rider?.users?.email || 'customer@naijadrops.com',
 		amount: (order?.agreed_price || 0) * 100, // Paystack uses kobo
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-		metadata: {
-			orderId: orderId,
-			riderId: rider?.user_id,
-			vendorId: order?.vendor_id
-		}
+			metadata: {
+				orderId: orderId,
+				riderId: rider?.id,
+				vendorId: order?.vendor_id
+			}
 	}
 
 	const handlePaystackSuccessAction = (reference) => {

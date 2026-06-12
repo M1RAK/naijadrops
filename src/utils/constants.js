@@ -116,6 +116,7 @@ export const KANO_BOUNDS = {
 export const APP_CONFIG = {
 	DEFAULT_MAP_ZOOM: 13,
 	RIDER_ACTIVE_WINDOW_MS: 3 * 60 * 1000, // 3 minutes
+	RIDER_MATCH_OFFER_EXPIRES_MS: 90 * 1000, // 90 seconds
 	HEARTBEAT_INTERVAL_MS: 35 * 1000, // 35 seconds
 	NEGOTIATION_TIMEOUT_S: 60 // 60 seconds
 }

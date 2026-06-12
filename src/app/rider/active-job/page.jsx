@@ -34,18 +34,18 @@ export default function ActiveJobPage() {
 			} = await supabase.auth.getUser()
 			if (!user) return
 
-			const { data: profile } = await supabase
-				.from('riders')
-				.select('id')
-				.eq('user_id', user.id)
-				.single()
+				const { data: profile } = await supabase
+					.from('riders')
+					.select('id')
+					.eq('user_id', user.id)
+					.single()
 			if (!profile) return
 
-			const { data } = await supabase
-				.from('orders')
-				.select('*, riders(*)')
-				.eq('rider_id', profile.id)
-				.in('status', ['assigned', 'picked_up', 'in_transit'])
+				const { data } = await supabase
+					.from('orders')
+					.select('*, riders(*)')
+					.eq('rider_id', profile.id)
+					.in('status', ['assigned', 'picked_up', 'in_transit'])
 				.order('updated_at', { ascending: false })
 				.limit(1)
 				.single()
@@ -113,7 +113,7 @@ export default function ActiveJobPage() {
 					You don't have any active deliveries right now.
 				</p>
 				<button
-					onClick={() => router.push('/rider')}
+					onClick={() => router.push('/rider/dashboard')}
 					className='bg-emerald-500 text-charcoal-950 font-black py-4 px-8 rounded-2xl uppercase text-xs tracking-widest'>
 					Back to Jobs
 				</button>
@@ -157,9 +157,9 @@ export default function ActiveJobPage() {
 
 				{/* Back + status pill */}
 				<div className='absolute top-6 left-6 right-6 flex justify-between items-start pointer-events-none'>
-					<button
-						onClick={() => router.push('/rider')}
-						className='w-12 h-12 bg-charcoal-950/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/10 pointer-events-auto shadow-2xl'>
+				<button
+					onClick={() => router.push('/rider/dashboard')}
+					className='w-12 h-12 bg-charcoal-950/80 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/10 pointer-events-auto shadow-2xl'>
 						<ArrowLeft size={22} />
 					</button>
 					<div

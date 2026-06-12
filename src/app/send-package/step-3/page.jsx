@@ -181,7 +181,7 @@ function Step3Content() {
     setMatchState('searching')
     await supabase
       .from('orders')
-      .update({ rider_id: null, status: 'pending' })
+      .update({ rider_id: null, rider_user_id: null, status: 'pending' })
       .eq('id', orderId)
     startQuickMatch(orderId)
   }

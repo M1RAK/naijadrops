@@ -110,8 +110,8 @@ export default function RiderJobsPage() {
             <div
               key={job.id}
               className="bg-charcoal-900/40 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all cursor-pointer"
-              onClick={() => router.push(`/rider/active-job?orderId=${job.id}`)}
-            >
+            onClick={() => router.push(`/rider/active-job?orderId=${job.id}`)}
+          >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -129,7 +129,7 @@ export default function RiderJobsPage() {
                   <p className="text-charcoal-500 text-sm mb-3">{job.item_description}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-black text-emerald-500">?{job.agreed_price || 0}</p>
+                  <p className="text-2xl font-black text-emerald-500">₦{job.agreed_price || 0}</p>
                   <p className="text-[10px] text-charcoal-600 uppercase">Amount</p>
                 </div>
               </div>

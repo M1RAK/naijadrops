@@ -64,23 +64,22 @@ export async function getActiveVendorOrder(
 
 /**
  * Fetch orders assigned to a rider that are currently active.
- * NOTE: riderId here is the auth user id (riders.user_id),
- * because the orders.rider_id column stores the auth user id directly.
+ * NOTE: riderId here is the rider profile id (riders.id).
  */
 export async function getActiveRiderOrder(
-  supabase: SupabaseClient,
-  riderUserId: string
+	supabase: SupabaseClient,
+	riderId: string
 ): Promise<OrderWithRider | null> {
-  const RIDER_ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'picked_up', 'in_transit']
+	const RIDER_ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'picked_up', 'in_transit']
 
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, riders(*)')
-    .eq('rider_id', riderUserId)
-    .in('status', RIDER_ACTIVE_STATUSES)
-    .order('updated_at', { ascending: false })
-    .limit(1)
-    .single()
+	const { data, error } = await supabase
+		.from('orders')
+		.select('*, riders(*)')
+		.eq('rider_id', riderId)
+		.in('status', RIDER_ACTIVE_STATUSES)
+		.order('updated_at', { ascending: false })
+		.limit(1)
+		.single()
 
   if (error || !data) return null
   return data as OrderWithRider
@@ -88,18 +87,18 @@ export async function getActiveRiderOrder(
 
 /**
  * Fetch completed orders for a rider, used on the earnings page.
- * NOTE: riderId here is the auth user id.
+ * NOTE: riderId here is the rider profile id (riders.id).
  */
 export async function getRiderCompletedOrders(
-  supabase: SupabaseClient,
-  riderUserId: string
+	supabase: SupabaseClient,
+	riderId: string
 ): Promise<DbOrder[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('rider_id', riderUserId)
-    .eq('status', 'delivered')
-    .order('created_at', { ascending: false })
+	const { data, error } = await supabase
+		.from('orders')
+		.select('*')
+		.eq('rider_id', riderId)
+		.eq('status', 'delivered')
+		.order('created_at', { ascending: false })
 
   if (error || !data) return []
   return data as DbOrder[]
@@ -165,20 +164,27 @@ export async function updateOrderStatus(
  * Assign a rider to an order and lock it to prevent race conditions.
  */
 export async function assignRiderToOrder(
-  supabase: SupabaseClient,
-  orderId: string,
-  riderId: string
+	supabase: SupabaseClient,
+	orderId: string,
+	riderId: string,
+	riderUserId?: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from('orders')
-    .update({
-      rider_id: riderId,
-      status: 'matched',
-      locked: true,
-    })
-    .eq('id', orderId)
+	const update: Partial<DbOrder> & { rider_user_id?: string | null } = {
+		rider_id: riderId,
+		status: 'matched',
+		locked: true
+	}
 
-  if (error) throw new Error(`Failed to assign rider: ${error.message}`)
+	if (riderUserId) {
+		update.rider_user_id = riderUserId
+	}
+
+	const { error } = await supabase
+		.from('orders')
+		.update(update)
+		.eq('id', orderId)
+
+	if (error) throw new Error(`Failed to assign rider: ${error.message}`)
 }
 
 /**
@@ -186,17 +192,18 @@ export async function assignRiderToOrder(
  * or when force-cancelling from the ops terminal.
  */
 export async function releaseRiderFromOrder(
-  supabase: SupabaseClient,
-  orderId: string
+	supabase: SupabaseClient,
+	orderId: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from('orders')
-    .update({
-      rider_id: null,
-      status: 'pending',
-      locked: false,
-    })
-    .eq('id', orderId)
+	const { error } = await supabase
+		.from('orders')
+		.update({
+			rider_id: null,
+			rider_user_id: null,
+			status: 'pending',
+			locked: false
+		})
+		.eq('id', orderId)
 
   if (error) throw new Error(`Failed to release rider: ${error.message}`)
 }

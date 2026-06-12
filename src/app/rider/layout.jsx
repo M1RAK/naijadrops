@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { Clock, ShieldAlert, AlertTriangle } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function RiderLayout({ children }) {
 	let supabase
@@ -21,7 +22,7 @@ export default async function RiderLayout({ children }) {
 		.eq('user_id', user.id)
 		.single()
 
-	if (!rider) redirect('/driver/onboarding')
+	if (!rider) redirect('/rider/onboarding')
 
 	const isApproved = rider.status === 'approved'
 	const isPending = rider.status === 'pending'
@@ -38,23 +39,22 @@ export default async function RiderLayout({ children }) {
 					{isApproved && (
 						<>
 							<a
-								href='/rider/home'
+								href='/rider/dashboard'
 								className='hover:text-emerald-400'>
-								Feed
-							</a>
-							<a
-								href='/rider/active-job'
-								className='hover:text-emerald-400'>
-								Active
-							</a>
-							<a
-								href='/rider/earnings'
-								className='hover:text-emerald-400'>
-								Money
-							</a>
-						</>
-					)}
-				</div>
+									Dashboard
+								</a>
+								<Link href='/rider/active-job' className='hover:text-emerald-400'>
+									Active
+								</Link>
+								<Link href='/rider/earnings' className='hover:text-emerald-400'>
+									Money
+								</Link>
+								<Link href='/rider/profile' className='hover:text-emerald-400'>
+									Account
+								</Link>
+							</>
+						)}
+					</div>
 			</nav>
 
 			<main className='flex-1 w-full max-w-lg mx-auto relative px-5 py-4'>

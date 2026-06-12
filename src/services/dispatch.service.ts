@@ -170,7 +170,7 @@ export async function dispatchOrder(
 	}
 
 	try {
-		await assignRiderToOrder(supabase, order.id, rider.user_id)
+		await assignRiderToOrder(supabase, order.id, rider.id, rider.user_id)
 		return { success: true, riderId: rider.user_id }
 	} catch (err) {
 		const message =

@@ -50,7 +50,7 @@ export default function RiderEarnings() {
 			const { data: orders, error } = await supabase
 				.from('orders')
 				.select('*')
-				.eq('rider_id', user.id)
+				.eq('rider_id', rider.id)
 				.eq('status', 'delivered')
 				.order('created_at', { ascending: false })
 
