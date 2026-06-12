@@ -36,7 +36,6 @@ yarn-error.log*
 .env*
 .vscode
 logs
-todo.md
 
 # vercel
 .vercel
