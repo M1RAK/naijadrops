@@ -39,8 +39,7 @@ export default function RiderOnboardingPage() {
 		plate_number: '',
 		id_card_url: '',
 		license_url: '',
-		vehicle_photo_url: '',
-		profile_photo_url: ''
+		vehicle_photo_url: ''
 	})
 
 	useEffect(() => {
@@ -102,13 +101,10 @@ export default function RiderOnboardingPage() {
 
 			if (uploadError) throw uploadError
 
-			const {
-				data: { publicUrl }
-			} = supabase.storage.from('documents').getPublicUrl(fileName)
-
+			// Store the storage path — signed URLs are generated on-demand
 			setFormData((prev) => ({
 				...prev,
-				[`${fieldName}_url`]: publicUrl
+				[`${fieldName}_url`]: fileName
 			}))
 			setUploadStats((prev) => ({ ...prev, [fieldName]: 'done' }))
 		} catch (err) {
@@ -149,7 +145,7 @@ export default function RiderOnboardingPage() {
 
 	if (pageLoading) {
 		return (
-			<div className='min-h-[100dvh] bg-charcoal-950 flex items-center justify-center'>
+			<div className='min-h-dvh bg-charcoal-950 flex items-center justify-center'>
 				<Loader2 className='text-emerald-500 animate-spin' size={32} />
 			</div>
 		)
@@ -161,7 +157,7 @@ export default function RiderOnboardingPage() {
 		const isPaused = existingStatus === 'paused'
 
 		return (
-			<div className='min-h-[100dvh] bg-charcoal-950 flex flex-col items-center justify-center p-8 text-center'>
+			<div className='min-h-dvh bg-charcoal-950 flex flex-col items-center justify-center p-8 text-center'>
 				<div className='w-24 h-24 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mb-8 relative'>
 					{isRejected || isPaused ? (
 						<AlertCircle className='text-red-500' size={40} />
@@ -173,20 +169,20 @@ export default function RiderOnboardingPage() {
 					{isApproved
 						? 'Your profile is active'
 						: isRejected
-							? 'Application not approved'
-							: isPaused
-								? 'Profile paused'
-								: 'Application under review'}
+						? 'Application not approved'
+						: isPaused
+						? 'Profile paused'
+						: 'Application under review'}
 				</h2>
 				<p className='text-charcoal-400 text-sm leading-relaxed mb-8 max-w-xs'>
 					{isApproved
 						? 'You can review your rider profile or head back to the workspace.'
 						: isRejected || isPaused
-							? 'Please update your details and resubmit when ready.'
-							: 'We have received your documents and are verifying them now.'}
+						? 'Please update your details and resubmit when ready.'
+						: 'We have received your documents and are verifying them now.'}
 				</p>
 
-				<div className='w-full max-w-sm bg-white/[0.03] border border-white/10 rounded-2xl p-5 text-left mb-8'>
+				<div className='w-full max-w-sm bg-white/3 border border-white/10 rounded-2xl p-5 text-left mb-8'>
 					<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest mb-3'>
 						Verification Progress
 					</div>
@@ -224,12 +220,16 @@ export default function RiderOnboardingPage() {
 	}
 
 	return (
-		<div className='min-h-[100dvh] bg-charcoal-950 flex flex-col'>
+		<div className='min-h-dvh bg-charcoal-950 flex flex-col'>
 			<div className='px-6 pt-14 pb-8'>
 				<div className='flex items-center gap-4 mb-6'>
 					<button
-						onClick={() => (step > 1 ? setStep((prev) => prev - 1) : router.back())}
-						className='w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-white'>
+						onClick={() =>
+							step > 1
+								? setStep((prev) => prev - 1)
+								: router.back()
+						}
+						className='w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white'>
 						<ArrowLeft size={18} />
 					</button>
 					<div>
@@ -247,12 +247,16 @@ export default function RiderOnboardingPage() {
 						<div key={s.id} className='flex-1'>
 							<div
 								className={`h-1.5 rounded-full transition-all duration-500 ${
-									step >= s.id ? 'bg-emerald-500' : 'bg-charcoal-800'
+									step >= s.id
+										? 'bg-emerald-500'
+										: 'bg-charcoal-800'
 								}`}
 							/>
 							<div
 								className={`text-[9px] mt-2 font-black uppercase tracking-widest ${
-									step >= s.id ? 'text-emerald-500' : 'text-charcoal-600'
+									step >= s.id
+										? 'text-emerald-500'
+										: 'text-charcoal-600'
 								}`}>
 								{s.title}
 							</div>
@@ -328,28 +332,7 @@ export default function RiderOnboardingPage() {
 								className='w-full bg-charcoal-900 border border-white/10 rounded-2xl py-4 px-5 text-white placeholder:text-charcoal-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/40'
 							/>
 						</div>
-						<div>
-							<label className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest ml-1 mb-2 block'>
-								Profile Photo
-							</label>
-							<input
-								type='file'
-								accept='image/*'
-								onChange={(e) => uploadDocument(e.target.files?.[0], 'profile_photo')}
-								className='hidden'
-								id='profile-photo'
-							/>
-							<label
-								htmlFor='profile-photo'
-								className='w-full bg-charcoal-900 border border-white/10 rounded-2xl py-4 px-5 text-white flex items-center justify-between cursor-pointer'>
-								<span className='text-charcoal-400'>Upload face photo</span>
-								{uploadStats.profile_photo === 'done' ? (
-									<CheckCircle2 size={18} className='text-emerald-500' />
-								) : (
-									<Camera size={18} className='text-charcoal-500' />
-								)}
-							</label>
-						</div>
+						{/* Profile photo removed — Google OAuth avatar is used instead */}
 						<div className='grid grid-cols-2 gap-3'>
 							<button
 								onClick={() => setStep(1)}
@@ -380,7 +363,10 @@ export default function RiderOnboardingPage() {
 									type='file'
 									accept='image/*'
 									onChange={(e) =>
-										uploadDocument(e.target.files?.[0], field.replace('_url', ''))
+										uploadDocument(
+											e.target.files?.[0],
+											field.replace('_url', '')
+										)
 									}
 									className='hidden'
 									id={field}
@@ -389,12 +375,21 @@ export default function RiderOnboardingPage() {
 									htmlFor={field}
 									className='w-full bg-charcoal-900 border border-white/10 rounded-2xl py-4 px-5 text-white flex items-center justify-between cursor-pointer'>
 									<span className='text-charcoal-400'>
-										{formData[field] ? 'Uploaded' : 'Upload file'}
+										{formData[field]
+											? 'Uploaded'
+											: 'Upload file'}
 									</span>
-									{uploadStats[field.replace('_url', '')] === 'done' ? (
-										<CheckCircle2 size={18} className='text-emerald-500' />
+									{uploadStats[field.replace('_url', '')] ===
+									'done' ? (
+										<CheckCircle2
+											size={18}
+											className='text-emerald-500'
+										/>
 									) : (
-										<Upload size={18} className='text-charcoal-500' />
+										<Upload
+											size={18}
+											className='text-charcoal-500'
+										/>
 									)}
 								</label>
 							</div>
@@ -417,7 +412,10 @@ export default function RiderOnboardingPage() {
 								disabled={loading}
 								className='py-4 bg-emerald-500 text-charcoal-950 rounded-2xl font-black uppercase text-xs tracking-widest disabled:opacity-50'>
 								{loading ? (
-									<Loader2 size={16} className='mx-auto animate-spin' />
+									<Loader2
+										size={16}
+										className='mx-auto animate-spin'
+									/>
 								) : (
 									'Submit'
 								)}

@@ -1,4 +1,5 @@
 import { validateAdmin } from '@/utils/admin'
+import { getRiderDocumentUrls } from '@/utils/supabase/storage'
 import { createClient } from '@/utils/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import {
@@ -110,6 +111,11 @@ export default async function DriverDetailPage({ params }: PageProps) {
 	const totalEarned = completedOrders.reduce(
 		(sum, o) => sum + (o.agreed_price ?? 0),
 		0
+	)
+
+	const { idCard, license, vehiclePhoto } = await getRiderDocumentUrls(
+		supabase,
+		rider
 	)
 
 	return (
@@ -236,15 +242,15 @@ export default async function DriverDetailPage({ params }: PageProps) {
 						<div className='space-y-3'>
 							<DocumentCard
 								label='Government ID Card'
-								url={rider.id_card_url ?? null}
+								url={idCard}
 							/>
 							<DocumentCard
 								label="Driver's License"
-								url={rider.license_url ?? null}
+								url={license}
 							/>
 							<DocumentCard
 								label='Vehicle Photo'
-								url={rider.vehicle_photo_url ?? null}
+								url={vehiclePhoto}
 							/>
 						</div>
 					</div>

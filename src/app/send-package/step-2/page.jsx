@@ -6,12 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
 	ArrowLeft,
 	Package,
-	Bike,
-	Car,
 	Phone,
 	User,
-	ArrowRight,
-	Loader2
+	ArrowRight
 } from 'lucide-react'
 
 const DRAFT_KEY = 'nd_order_draft'
