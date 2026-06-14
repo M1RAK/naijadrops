@@ -19,9 +19,10 @@ export async function validateAdmin(requiredRole = 'admin') {
 	if (authError || !user)
 		throw new Error('Unauthorized Access - Authentication Required')
 
-	if (!user.email?.toLowerCase().endsWith('@naijadrops.tech')) {
-		throw new Error('Unauthorized Access - Corporate Domain Required')
-	}
+	// TODO: re-enable domain restriction before going to production
+	// if (!user.email?.toLowerCase().endsWith('@naijadrops.tech')) {
+	// 	throw new Error('Unauthorized Access - Corporate Domain Required')
+	// }
 
 	const { data: admin, error: dbError } = await supabase
 		.from('admin_users')

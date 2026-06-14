@@ -2,24 +2,28 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { validateAdmin } from '@/utils/admin'
 import {
-	Activity,
-	ShieldCheck,
 	Users,
 	Package,
 	LayoutDashboard
 } from 'lucide-react'
 
 export default async function OpsTerminalLayout({ children }) {
-	const supabase = await createClient()
-	const {
-		data: { user }
-	} = await supabase.auth.getUser()
+	let supabase
+	let user
+
+	try {
+		supabase = await createClient()
+		const { data: { user: authUser } } = await supabase.auth.getUser()
+		user = authUser
+	} catch {
+		redirect('/auth/login')
+	}
 
 	if (!user) redirect('/auth/login')
 
 	try {
 		await validateAdmin()
-	} catch (err) {
+	} catch {
 		redirect('/')
 	}
 
@@ -39,13 +43,12 @@ export default async function OpsTerminalLayout({ children }) {
 				</div>
 
 				<div className='flex-1 overflow-y-auto px-4 py-8 space-y-8'>
-					{/* Visibility */}
 					<div>
 						<div className='text-[10px] font-black text-charcoal-600 uppercase tracking-[0.3em] mb-4 px-4'>
 							Visibility
 						</div>
 						<nav className='space-y-1'>
-							<a
+
 								href='/ops-terminal/dashboard'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<LayoutDashboard
@@ -54,7 +57,7 @@ export default async function OpsTerminalLayout({ children }) {
 								/>
 								<span>Overview</span>
 							</a>
-							<a
+
 								href='/ops-terminal/orders'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<Package
@@ -66,13 +69,12 @@ export default async function OpsTerminalLayout({ children }) {
 						</nav>
 					</div>
 
-					{/* Operations */}
 					<div>
 						<div className='text-[10px] font-black text-charcoal-600 uppercase tracking-[0.3em] mb-4 px-4'>
 							Operations
 						</div>
 						<nav className='space-y-1'>
-							<a
+<a
 								href='/ops-terminal/drivers'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<Users
@@ -85,7 +87,6 @@ export default async function OpsTerminalLayout({ children }) {
 					</div>
 				</div>
 
-				{/* Footer */}
 				<div className='p-6 border-t border-white/5 bg-black/40'>
 					<div className='text-[10px] text-charcoal-500 font-mono tracking-widest uppercase mb-1'>
 						Admin
@@ -93,10 +94,7 @@ export default async function OpsTerminalLayout({ children }) {
 					<div className='text-white text-xs font-bold truncate'>
 						{user?.email}
 					</div>
-					<form
-						action='/api/auth/signout'
-						method='POST'
-						className='mt-4'>
+					<form action='/api/auth/signout' method='POST' className='mt-4'>
 						<button
 							type='submit'
 							className='text-red-500 text-[10px] font-black uppercase tracking-widest hover:underline'>
@@ -106,7 +104,6 @@ export default async function OpsTerminalLayout({ children }) {
 				</div>
 			</aside>
 
-			{/* Main Content */}
 			<main className='flex-1 overflow-y-auto relative z-10 bg-black'>
 				<div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 pointer-events-none mix-blend-overlay" />
 				{children}
