@@ -1,11 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { validateAdmin } from '@/utils/admin'
-import {
-	Users,
-	Package,
-	LayoutDashboard
-} from 'lucide-react'
+import { Users, Package, LayoutDashboard } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function OpsTerminalLayout({ children }) {
 	let supabase
@@ -13,7 +10,9 @@ export default async function OpsTerminalLayout({ children }) {
 
 	try {
 		supabase = await createClient()
-		const { data: { user: authUser } } = await supabase.auth.getUser()
+		const {
+			data: { user: authUser }
+		} = await supabase.auth.getUser()
 		user = authUser
 	} catch {
 		redirect('/auth/login')
@@ -48,7 +47,7 @@ export default async function OpsTerminalLayout({ children }) {
 							Visibility
 						</div>
 						<nav className='space-y-1'>
-
+							<Link
 								href='/ops-terminal/dashboard'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<LayoutDashboard
@@ -56,8 +55,9 @@ export default async function OpsTerminalLayout({ children }) {
 									className='group-hover:text-emerald-500 transition-colors'
 								/>
 								<span>Overview</span>
-							</a>
+							</Link>
 
+							<Link
 								href='/ops-terminal/orders'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<Package
@@ -65,7 +65,7 @@ export default async function OpsTerminalLayout({ children }) {
 									className='group-hover:text-emerald-500 transition-colors'
 								/>
 								<span>Live Orders</span>
-							</a>
+							</Link>
 						</nav>
 					</div>
 
@@ -74,7 +74,7 @@ export default async function OpsTerminalLayout({ children }) {
 							Operations
 						</div>
 						<nav className='space-y-1'>
-<a
+							<Link
 								href='/ops-terminal/drivers'
 								className='flex items-center gap-3 p-4 rounded-2xl hover:bg-white/5 hover:text-white text-charcoal-400 font-bold transition-all text-sm group'>
 								<Users
@@ -82,7 +82,7 @@ export default async function OpsTerminalLayout({ children }) {
 									className='group-hover:text-emerald-500 transition-colors'
 								/>
 								<span>Drivers</span>
-							</a>
+							</Link>
 						</nav>
 					</div>
 				</div>
@@ -94,7 +94,10 @@ export default async function OpsTerminalLayout({ children }) {
 					<div className='text-white text-xs font-bold truncate'>
 						{user?.email}
 					</div>
-					<form action='/api/auth/signout' method='POST' className='mt-4'>
+					<form
+						action='/api/auth/signout'
+						method='POST'
+						className='mt-4'>
 						<button
 							type='submit'
 							className='text-red-500 text-[10px] font-black uppercase tracking-widest hover:underline'>
