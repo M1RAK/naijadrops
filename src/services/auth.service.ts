@@ -100,8 +100,7 @@ export async function ensureUserProfile(
  * Returns the correct redirect path after login based on UserPortals.
  */
 export function getPortalPath(portals: UserPortals): string {
-  if (portals.isAdmin) return '/ops-terminal/dashboard'
-  if (portals.rider)   return '/rider'
+  if (portals.rider) return '/rider'
   return '/dashboard'
 }
 

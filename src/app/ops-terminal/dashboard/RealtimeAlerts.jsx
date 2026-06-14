@@ -2,15 +2,28 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { AlertOctagon, Activity, Navigation, Zap } from 'lucide-react'
+import { AlertOctagon, Activity, Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function RealtimeAlerts() {
 	const [alerts, setAlerts] = useState([])
-	const supabase = createClient()
+	const [supabase, setSupabase] = useState(null)
+
+	// Initialize client safely — avoids throwing during render
+	useEffect(() => {
+		try {
+			setSupabase(createClient())
+		} catch (err) {
+			console.error(
+				'[RealtimeAlerts] Failed to init Supabase client:',
+				err
+			)
+		}
+	}, [])
 
 	useEffect(() => {
-		// Listen to various channels for operations
+		if (!supabase) return
+
 		const channel = supabase
 			.channel('ops-terminal-alerts')
 			.on(
@@ -50,7 +63,7 @@ export default function RealtimeAlerts() {
 	}, [supabase])
 
 	const addAlert = (alert) => {
-		setAlerts((prev) => [alert, ...prev].slice(0, 5)) // Keep last 5
+		setAlerts((prev) => [alert, ...prev].slice(0, 5))
 	}
 
 	if (alerts.length === 0) {
@@ -67,7 +80,7 @@ export default function RealtimeAlerts() {
 	return (
 		<div className='space-y-3'>
 			<AnimatePresence>
-				{alerts.map((alert, idx) => (
+				{alerts.map((alert) => (
 					<motion.div
 						key={`${alert.id}-${alert.time}`}
 						initial={{ opacity: 0, x: 20 }}
