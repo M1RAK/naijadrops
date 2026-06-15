@@ -1,7 +1,8 @@
 import { validateAdmin } from '@/utils/admin'
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
+import { getAllRiders } from '@/services/riders.service'
 import { redirect } from 'next/navigation'
-import {  FileText, ShieldCheck } from 'lucide-react'
+import { FileText, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import DriverActions from './DriverActions'
 import InviteDriverButton from './InviteDriverButton'
@@ -9,21 +10,17 @@ import InviteDriverButton from './InviteDriverButton'
 export const dynamic = 'force-dynamic'
 
 export default async function AdminDriversPage() {
-	let supabase
 	try {
 		await validateAdmin()
-		supabase = await createClient()
 	} catch {
 		redirect('/')
 	}
 
-	const { data: riders } = await supabase
-		.from('riders')
-		.select('*, users(full_name, email, phone)')
-		.order('created_at', { ascending: false })
+	const adminSupabase = createAdminClient()
+	const riders = await getAllRiders(adminSupabase)
 
-	const pendingRiders = riders?.filter((r) => r.status === 'pending') || []
-	const approvedRiders = riders?.filter((r) => r.status === 'approved') || []
+	const pendingRiders = riders.filter((r) => r.status === 'pending')
+	const approvedRiders = riders.filter((r) => r.status === 'approved')
 
 	return (
 		<div className='min-h-screen bg-black text-white p-8 font-mono'>
@@ -41,7 +38,7 @@ export default async function AdminDriversPage() {
 			</div>
 
 			<div className='grid grid-cols-1 gap-4'>
-				{riders && riders.length > 0 ? (
+				{riders.length > 0 ? (
 					riders.map((rider) => (
 						<Link
 							key={rider.user_id}
@@ -61,7 +58,9 @@ export default async function AdminDriversPage() {
 								<div className='flex-1'>
 									<div className='flex items-center gap-2'>
 										<h3 className='text-lg font-black'>
-											{rider.users?.full_name}
+											{rider.users?.full_name ||
+												rider.full_name ||
+												'Unnamed Rider'}
 										</h3>
 										<span
 											className={`text-xs font-black px-2 py-1 rounded ${

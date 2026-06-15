@@ -149,7 +149,7 @@ export default function RiderDashboard() {
 	}
 
 	async function toggleOnlineStatus() {
-		if (!rider) return
+		if (!rider || rider.status !== 'approved') return
 		const newStatus = isOnline ? 'offline' : 'online'
 
 		await supabase
@@ -208,8 +208,8 @@ export default function RiderDashboard() {
 			activeJob.status === 'assigned'
 				? 'Head to pickup'
 				: activeJob.status === 'picked_up'
-					? 'Pickup complete'
-					: 'Delivering now'
+				? 'Pickup complete'
+				: 'Delivering now'
 
 		return { label }
 	}, [activeJob])
@@ -237,15 +237,21 @@ export default function RiderDashboard() {
 							Rating: ⭐ {rider?.rating || '5.0'}
 						</p>
 					</div>
-					<button
-						onClick={toggleOnlineStatus}
-						className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
-							isOnline
-								? 'bg-emerald-500 text-charcoal-950 shadow-[0_0_16px_rgba(16,185,129,0.4)]'
-								: 'bg-charcoal-800 text-white border border-white/10'
-						}`}>
-						{isOnline ? 'Online' : 'Offline'}
-					</button>
+					{rider?.status === 'approved' ? (
+						<button
+							onClick={toggleOnlineStatus}
+							className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+								isOnline
+									? 'bg-emerald-500 text-charcoal-950 shadow-[0_0_16px_rgba(16,185,129,0.4)]'
+									: 'bg-charcoal-800 text-white border border-white/10'
+							}`}>
+							{isOnline ? 'Online' : 'Offline'}
+						</button>
+					) : (
+						<div className='px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20'>
+							Pending Approval
+						</div>
+					)}
 				</div>
 			</div>
 
@@ -333,7 +339,9 @@ export default function RiderDashboard() {
 											<Clock size={12} />
 											{expired
 												? 'Offer expired'
-												: `Expires in ${formatRemaining(remainingMs)}`}
+												: `Expires in ${formatRemaining(
+														remainingMs
+												  )}`}
 										</span>
 										<span className='text-emerald-500'>
 											Matched offer

@@ -1,6 +1,7 @@
 import { validateAdmin } from '@/utils/admin'
 import { getRiderDocumentUrls } from '@/utils/supabase/storage'
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
+import { getRiderWithUser } from '@/services/riders.service'
 import { redirect, notFound } from 'next/navigation'
 import {
 	Truck,
@@ -81,21 +82,19 @@ function DocumentCard({ label, url }: { label: string; url: string | null }) {
 }
 
 export default async function DriverDetailPage({ params }: PageProps) {
-	let supabase
 	try {
 		await validateAdmin()
-		supabase = await createClient()
 	} catch {
 		redirect('/')
 	}
 
-	const { data: rider, error } = await supabase
-		.from('riders')
-		.select('*, users(full_name, email, phone)')
-		.eq('user_id', params.driverId)
-		.single()
+	const supabase = createAdminClient()
 
-	if (error || !rider) notFound()
+	const rider = await getRiderWithUser(supabase, params.driverId)
+	if (!rider) notFound()
+
+	const displayName =
+		rider.users?.full_name || rider.full_name || 'Unknown Driver'
 
 	const { data: recentOrders } = await supabase
 		.from('orders')
@@ -131,7 +130,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 						Registry / Drivers / Detail
 					</div>
 					<h1 className='text-3xl font-black italic tracking-tighter uppercase'>
-						{rider.users?.full_name ?? 'Unknown Driver'}
+						{displayName}
 					</h1>
 				</div>
 				<div className='flex items-center gap-3'>
@@ -157,12 +156,12 @@ export default async function DriverDetailPage({ params }: PageProps) {
 									/>
 								) : (
 									<span className='text-3xl font-black text-charcoal-600'>
-										{rider.users?.full_name?.[0] ?? '?'}
+										{displayName?.[0] ?? '?'}
 									</span>
 								)}
 							</div>
 							<h2 className='text-xl font-black tracking-tight'>
-								{rider.users?.full_name ?? '—'}
+								{displayName}
 							</h2>
 							<div className='flex items-center gap-1 text-amber-400 mt-1'>
 								<Star size={14} fill='currentColor' />

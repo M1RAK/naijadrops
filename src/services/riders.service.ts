@@ -1,10 +1,49 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type {
-	DbRider,
-	RiderStatus,
-	OperationalStatus
-} from '@/types/database.types'
+import type { DbRider, OperationalStatus } from '@/types/database.types'
 import type { RiderWithUser } from '@/types/domain.types'
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Fetch `users` rows for a set of auth user ids and return a Map keyed by id.
+ *
+ * We deliberately avoid PostgREST's embedded-resource join syntax
+ * (`.select('*, users(full_name, email, phone)')`) here. That syntax depends
+ * on a foreign key relationship being registered in PostgREST's schema cache —
+ * if it isn't (or it's ambiguous), the query can error or silently return
+ * nothing. A plain `.in('id', ids)` lookup has no such dependency.
+ */
+async function getUsersByIds(
+	supabase: SupabaseClient,
+	userIds: string[]
+): Promise<
+	Map<
+		string,
+		{ full_name: string | null; email: string | null; phone: string | null }
+	>
+> {
+	if (userIds.length === 0) return new Map()
+
+	const { data, error } = await supabase
+		.from('users')
+		.select('id, full_name, email, phone')
+		.in('id', userIds)
+
+	if (error) {
+		console.error(
+			'[riders.service] Failed to fetch user profiles:',
+			error.message
+		)
+		return new Map()
+	}
+
+	return new Map(
+		(data ?? []).map((u) => [
+			u.id,
+			{ full_name: u.full_name, email: u.email, phone: u.phone }
+		])
+	)
+}
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
@@ -36,12 +75,25 @@ export async function getRiderWithUser(
 ): Promise<RiderWithUser | null> {
 	const { data, error } = await supabase
 		.from('riders')
-		.select('*, users(full_name, email, phone)')
+		.select('*')
 		.eq('user_id', userId)
 		.single()
 
-	if (error || !data) return null
-	return data as RiderWithUser
+	if (error || !data) {
+		if (error)
+			console.error(
+				'[riders.service] getRiderWithUser failed:',
+				error.message
+			)
+		return null
+	}
+
+	const usersById = await getUsersByIds(supabase, [data.user_id])
+
+	return {
+		...(data as DbRider),
+		users: usersById.get(data.user_id) ?? null
+	}
 }
 
 /**
@@ -53,11 +105,26 @@ export async function getAllRiders(
 ): Promise<RiderWithUser[]> {
 	const { data, error } = await supabase
 		.from('riders')
-		.select('*, users(full_name, email, phone)')
+		.select('*')
 		.order('created_at', { ascending: false })
 
-	if (error || !data) return []
-	return data as RiderWithUser[]
+	if (error) {
+		console.error('[riders.service] getAllRiders failed:', error.message)
+		return []
+	}
+
+	const riders = (data ?? []) as DbRider[]
+	if (riders.length === 0) return []
+
+	const usersById = await getUsersByIds(
+		supabase,
+		riders.map((r) => r.user_id)
+	)
+
+	return riders.map((rider) => ({
+		...rider,
+		users: usersById.get(rider.user_id) ?? null
+	}))
 }
 
 /**
@@ -77,6 +144,7 @@ export async function getOnlineRiders(
 	const { data, error } = await supabase
 		.from('riders')
 		.select('*')
+		.eq('approved', true)
 		.eq('operational_status', 'online')
 		.eq('vehicle_type', vehicleType)
 		.gt('last_seen_at', cutoff)
@@ -96,13 +164,23 @@ export async function getFlaggedRiders(
 ): Promise<RiderWithUser[]> {
 	const { data, error } = await supabase
 		.from('riders')
-		.select('*, users(full_name, email)')
+		.select('*')
 		.lt('rating', ratingThreshold)
 		.order('rating', { ascending: true })
 		.limit(limit)
 
 	if (error || !data) return []
-	return data as RiderWithUser[]
+
+	const riders = data as DbRider[]
+	const usersById = await getUsersByIds(
+		supabase,
+		riders.map((r) => r.user_id)
+	)
+
+	return riders.map((rider) => ({
+		...rider,
+		users: usersById.get(rider.user_id) ?? null
+	}))
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -154,7 +232,11 @@ export async function deactivateRider(
 ): Promise<void> {
 	const { error } = await supabase
 		.from('riders')
-		.update({ approved: false, status: 'pending' })
+		.update({
+			approved: false,
+			status: 'pending',
+			operational_status: 'offline'
+		})
 		.eq('user_id', userId)
 
 	if (error) throw new Error(`Failed to deactivate rider: ${error.message}`)

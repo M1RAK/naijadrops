@@ -1,5 +1,3 @@
-import type { OrderStatus } from './database.types'
-
 // ─── Generic response wrapper ─────────────────────────────────────────────────
 // Every API route should return one of these two shapes.
 
@@ -62,20 +60,6 @@ export type ResolveLinkResult = ResolveLinkSuccess | ResolveLinkError
 export interface VerifyPaymentRequest {
 	reference: string
 	orderId: string
-}
-
-// ─── /api/notify-delivery ────────────────────────────────────────────────────
-
-export interface NotifyDeliveryRequest {
-	orderId: string
-	trackingUrl: string
-	recipientPhone: string
-}
-
-// ─── /api/admin/approve-driver ───────────────────────────────────────────────
-
-export interface ApproveDriverRequest {
-	driverId: string
 }
 
 // ─── /api/admin/invite-driver ────────────────────────────────────────────────

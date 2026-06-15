@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bell, Zap, X, Package } from 'lucide-react'
+import { Zap, X } from 'lucide-react'
 
 export default function DriverNotifications({ profile, isOnline }) {
 	const supabase = createClient()
@@ -27,7 +27,7 @@ export default function DriverNotifications({ profile, isOnline }) {
 					if (payload.new.vehicle_type === profile.vehicle_type) {
 						triggerPing(
 							`New Order: ${payload.new.item_category}`,
-							`Proposed Fare: ₦${payload.new.estimated_price?.toLocaleString()}`
+							`Proposed Fare: ₦${payload.new.agreed_price?.toLocaleString()}`
 						)
 					}
 				}
@@ -38,11 +38,12 @@ export default function DriverNotifications({ profile, isOnline }) {
 					event: 'UPDATE',
 					schema: 'public',
 					table: 'orders',
-					filter: `rider_id=eq.${profile.user_id}`
+					filter: `rider_user_id=eq.${profile.user_id}`
 				},
 				(payload) => {
-					// Notification for payment or status changes on their assigned order
-					if (payload.new.status === 'paid') {
+					// Fires when escrow is authorized and the order moves
+					// from 'matched' to 'assigned'
+					if (payload.new.status === 'assigned') {
 						triggerPing(
 							'Payment Confirmed!',
 							'Proceed to pickup immediately.'
@@ -56,7 +57,6 @@ export default function DriverNotifications({ profile, isOnline }) {
 	}, [isOnline, profile])
 
 	function triggerPing(title, sub) {
-		// Play sound if possible (optional but high engagement)
 		try {
 			const audio = new Audio('/ping.mp3')
 			audio.play()
