@@ -6,8 +6,8 @@ export async function proxy(request: NextRequest) {
 	const { pathname } = request.nextUrl
 
 	const supabase = createServerClient(
-		process.env.NEXT_PUBLIC_SUPABASE_URL,
-		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 		{
 			cookies: {
 				getAll: () => request.cookies.getAll(),
@@ -43,13 +43,6 @@ export async function proxy(request: NextRequest) {
 			return NextResponse.redirect(new URL('/auth/login', request.url))
 		}
 		return response
-	}
-
-	if (pathname.startsWith('/ops-terminal')) {
-		const isAdmin = user.email?.toLowerCase().endsWith('@naijadrops.tech')
-		if (!isAdmin) {
-			return new NextResponse(null, { status: 404 })
-		}
 	}
 
 	return response
