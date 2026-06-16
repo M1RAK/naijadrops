@@ -102,16 +102,6 @@ export interface DbAdminUser {
 	created_at: string
 }
 
-export interface DbReview {
-	id: string
-	order_id: string
-	rider_id: string
-	user_id: string
-	rating: number
-	feedback: string | null
-	created_at: string
-}
-
 export interface DbAdminActionLog {
 	id: string
 	admin_id: string
@@ -127,14 +117,5 @@ export interface DbResolvedLink {
 	original_url: string
 	lat: number
 	lng: number
-	created_at: string
-}
-
-export interface DbWalletTransaction {
-	id: string
-	rider_id: string
-	amount: number
-	type: 'earning' | 'payout_request' | 'payout_completed'
-	order_id: string | null
 	created_at: string
 }

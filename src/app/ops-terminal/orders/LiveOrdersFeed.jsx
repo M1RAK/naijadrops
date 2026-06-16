@@ -57,29 +57,41 @@ export default function LiveOrdersFeed({ initialOrders }) {
 				'postgres_changes',
 				{ event: '*', schema: 'public', table: 'orders' },
 				async (payload) => {
-					// Full refresh of order data to get joined relations (riders/users)
-					const { data: updatedOrder } = await supabase
-						.from('orders')
-						.select(
-							'*, riders(user_id, users(full_name)), vendors(business_name, users(full_name, phone))'
+					const orderId = payload.new?.id || payload.old?.id
+
+					if (payload.eventType === 'DELETE') {
+						setOrders((prev) =>
+							prev.filter((o) => o.id !== orderId)
 						)
-						.eq('id', payload.new.id || payload.old.id)
-						.single()
+						return
+					}
+
+					// Refetch full order + rider/vendor/user detail via the
+					// admin-backed API route (service role key never reaches
+					// the browser)
+					let updatedOrder = null
+					try {
+						const res = await fetch('/api/admin/order-detail', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({ orderId })
+						})
+						if (res.ok) updatedOrder = await res.json()
+					} catch (err) {
+						console.error(
+							'[LiveOrdersFeed] order-detail fetch failed:',
+							err
+						)
+					}
 
 					if (
-						payload.eventType === 'DELETE' ||
-						(updatedOrder &&
-							['cancelled', 'delivered'].includes(
-								updatedOrder.status
-							))
+						!updatedOrder ||
+						['cancelled', 'delivered'].includes(updatedOrder.status)
 					) {
 						setOrders((prev) =>
-							prev.filter(
-								(o) =>
-									o.id !== (payload.old.id || payload.new.id)
-							)
+							prev.filter((o) => o.id !== orderId)
 						)
-					} else if (updatedOrder) {
+					} else {
 						setOrders((prev) => {
 							const exists = prev.find(
 								(o) => o.id === updatedOrder.id
@@ -224,13 +236,13 @@ export default function LiveOrdersFeed({ initialOrders }) {
 							<div className='pt-4 border-t border-white/5 flex justify-between items-center'>
 								<div className='flex items-center gap-2'>
 									<div className='w-6 h-6 rounded-full bg-charcoal-800 flex items-center justify-center text-[8px] font-black text-charcoal-500'>
-										{order.riders?.users?.full_name?.slice(
+										{order.riders?.users?.name?.slice(
 											0,
 											1
 										) || '?'}
 									</div>
 									<div className='text-[10px] font-bold text-charcoal-400'>
-										{order.riders?.users?.full_name ||
+										{order.riders?.users?.name ||
 											'Unassigned'}
 									</div>
 								</div>

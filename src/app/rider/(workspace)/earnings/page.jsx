@@ -20,11 +20,7 @@ export default function RiderEarnings() {
 	const router = useRouter()
 	const supabase = createClient()
 	const [profile, setProfile] = useState(null)
-	const [earningsData, setEarningsData] = useState({
-		total: 0,
-		pending: 0,
-		weekly: 0
-	})
+	const [totalEarnings, setTotalEarnings] = useState(0)
 	const [transactions, setTransactions] = useState([])
 	const [loading, setLoading] = useState(true)
 
@@ -58,11 +54,7 @@ export default function RiderEarnings() {
 				const total =
 					orders.reduce((sum, o) => sum + (o.agreed_price || 0), 0) *
 					(1 - PRICING.PLATFORM_COMMISSION)
-				setEarningsData({
-					total: Math.floor(total),
-					pending: 0, // In a real system, this would come from wallet_transactions
-					weekly: Math.floor(total * 0.4)
-				})
+				setTotalEarnings(Math.floor(total))
 				setTransactions(orders.slice(0, 5))
 			}
 			setLoading(false)
@@ -111,7 +103,7 @@ export default function RiderEarnings() {
 							<Wallet size={20} strokeWidth={3} />
 						</div>
 						<span className='text-[10px] font-black uppercase tracking-[0.4em] text-emerald-500 font-outfit italic'>
-							Liquid Balance
+							Total Earnings
 						</span>
 					</div>
 
@@ -120,28 +112,14 @@ export default function RiderEarnings() {
 							₦
 						</span>
 						<span className='text-7xl font-black text-white tracking-tighter italic font-outfit leading-none'>
-							{earningsData.total.toLocaleString()}
+							{totalEarnings.toLocaleString()}
 						</span>
 					</div>
 
-					<div className='grid grid-cols-2 gap-4 mb-8'>
-						<div className='p-5 bg-charcoal-900/50 rounded-2xl border border-white/5 backdrop-blur-md'>
-							<div className='text-[9px] font-black text-charcoal-600 uppercase tracking-widest mb-1 italic'>
-								Pending Clear
-							</div>
-							<div className='text-lg font-black text-white tracking-tight'>
-								₦{earningsData.pending.toLocaleString()}
-							</div>
-						</div>
-						<div className='p-5 bg-charcoal-900/50 rounded-2xl border border-white/5 backdrop-blur-md'>
-							<div className='text-[9px] font-black text-emerald-500/60 uppercase tracking-widest mb-1 italic'>
-								Weekly Yield
-							</div>
-							<div className='text-lg font-black text-white tracking-tight'>
-								₦{earningsData.weekly.toLocaleString()}
-							</div>
-						</div>
-					</div>
+					<p className='text-charcoal-500 text-[10px] font-bold uppercase tracking-widest mb-8'>
+						Across {transactions.length > 0 ? 'all' : '0'} completed
+						deliveries, net of platform commission.
+					</p>
 
 					<button className='w-full py-6 bg-emerald-500 hover:bg-emerald-400 text-charcoal-950 rounded-4xl font-black text-lg uppercase tracking-widest transition-all shadow-glow active:scale-95 flex items-center justify-center gap-3'>
 						Withdraw Funds{' '}
@@ -186,7 +164,8 @@ export default function RiderEarnings() {
 								<div className='text-xl font-black text-white italic tracking-tighter mb-1'>
 									+₦
 									{Math.floor(
-										tx.agreed_price * 0.85
+										tx.agreed_price *
+											(1 - PRICING.PLATFORM_COMMISSION)
 									).toLocaleString()}
 								</div>
 								<div className='text-[9px] font-black text-emerald-500 uppercase tracking-widest italic flex items-center justify-end gap-1'>

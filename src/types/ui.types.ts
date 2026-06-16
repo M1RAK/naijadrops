@@ -69,12 +69,3 @@ export interface DocumentUploadState {
 	profile_photo: DocumentUploadStatus
 }
 
-// ─── Pricing ──────────────────────────────────────────────────────────────────
-
-export interface PriceBreakdown {
-	base: number
-	distanceCost: number
-	sizeMultiplier: number
-	total: number
-	express: number // total * EXPRESS_MULTIPLIER
-}
