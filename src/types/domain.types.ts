@@ -15,7 +15,7 @@ export interface LocationPoint {
 export interface RiderWithUser extends DbRider {
 	users:
 		| {
-				full_name: string | null
+				name: string | null
 				email: string | null
 				phone: string | null
 		  }

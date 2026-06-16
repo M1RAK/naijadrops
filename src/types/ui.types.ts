@@ -11,7 +11,6 @@ export interface OrderDraft {
 	size: 'small' | 'medium' | 'large' | null
 	vehicle: VehicleType | null
 	description: string | null
-	voice_note: string | null
 	recipient_name: string | null
 	recipient_phone: string | null
 	notify_receiver: boolean
@@ -71,8 +70,6 @@ export interface DocumentUploadState {
 }
 
 // ─── Pricing ──────────────────────────────────────────────────────────────────
-
-export type FareType = 'standard' | 'express' | 'offer'
 
 export interface PriceBreakdown {
 	base: number

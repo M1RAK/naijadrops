@@ -55,26 +55,14 @@ export default async function AdminDriversPage() {
 										'ND'
 									)}
 								</div>
-								<div className='flex-1'>
+							<div className='flex-1'>
 									<div className='flex items-center gap-2'>
 										<h3 className='text-lg font-black'>
-											{rider.users?.full_name ||
+											{rider.users?.name ||
 												rider.full_name ||
 												'Unnamed Rider'}
 										</h3>
-										<span
-											className={`text-xs font-black px-2 py-1 rounded ${
-												rider.status === 'approved'
-													? 'bg-emerald-500/20 text-emerald-400'
-													: 'bg-amber-500/20 text-amber-400'
-											}`}>
-											{rider.status}
-										</span>
-									</div>
-									<p className='text-charcoal-500 text-sm'>
-										{rider.users?.email}
-									</p>
-								</div>
+                    </div>
 								<div className='flex gap-2'>
 									{rider.license_url && (
 										<FileText

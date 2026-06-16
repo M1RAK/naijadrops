@@ -10,17 +10,17 @@ import { ACTIVE_ORDER_STATUSES } from '@/utils/constants'
  * Returns null if not found rather than throwing.
  */
 export async function getOrderById(
-  supabase: SupabaseClient,
-  orderId: string
+	supabase: SupabaseClient,
+	orderId: string
 ): Promise<OrderWithRider | null> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, riders(*, users(full_name, email))')
-    .eq('id', orderId)
-    .single()
+	const { data, error } = await supabase
+		.from('orders')
+		.select('*, riders(*, users(name, email))')
+		.eq('id', orderId)
+		.single()
 
-  if (error || !data) return null
-  return data as OrderWithRider
+	if (error || !data) return null
+	return data as OrderWithRider
 }
 
 /**
@@ -28,17 +28,17 @@ export async function getOrderById(
  * NOTE: vendorId is vendors.id — NOT the auth user id.
  */
 export async function getVendorOrders(
-  supabase: SupabaseClient,
-  vendorId: string
+	supabase: SupabaseClient,
+	vendorId: string
 ): Promise<DbOrder[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('vendor_id', vendorId)
-    .order('created_at', { ascending: false })
+	const { data, error } = await supabase
+		.from('orders')
+		.select('*')
+		.eq('vendor_id', vendorId)
+		.order('created_at', { ascending: false })
 
-  if (error || !data) return []
-  return data as DbOrder[]
+	if (error || !data) return []
+	return data as DbOrder[]
 }
 
 /**
@@ -47,19 +47,19 @@ export async function getVendorOrders(
  * NOTE: vendorId is vendors.id — NOT the auth user id.
  */
 export async function getActiveVendorOrder(
-  supabase: SupabaseClient,
-  vendorId: string
+	supabase: SupabaseClient,
+	vendorId: string
 ): Promise<Pick<DbOrder, 'id' | 'status'> | null> {
-  const { data } = await supabase
-    .from('orders')
-    .select('id, status')
-    .eq('vendor_id', vendorId)
-    .in('status', ACTIVE_ORDER_STATUSES)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
+	const { data } = await supabase
+		.from('orders')
+		.select('id, status')
+		.eq('vendor_id', vendorId)
+		.in('status', ACTIVE_ORDER_STATUSES)
+		.order('created_at', { ascending: false })
+		.limit(1)
+		.single()
 
-  return data ?? null
+	return data ?? null
 }
 
 /**
@@ -70,7 +70,11 @@ export async function getActiveRiderOrder(
 	supabase: SupabaseClient,
 	riderId: string
 ): Promise<OrderWithRider | null> {
-	const RIDER_ACTIVE_STATUSES: OrderStatus[] = ['assigned', 'picked_up', 'in_transit']
+	const RIDER_ACTIVE_STATUSES: OrderStatus[] = [
+		'assigned',
+		'picked_up',
+		'in_transit'
+	]
 
 	const { data, error } = await supabase
 		.from('orders')
@@ -81,8 +85,8 @@ export async function getActiveRiderOrder(
 		.limit(1)
 		.single()
 
-  if (error || !data) return null
-  return data as OrderWithRider
+	if (error || !data) return null
+	return data as OrderWithRider
 }
 
 /**
@@ -100,26 +104,26 @@ export async function getRiderCompletedOrders(
 		.eq('status', 'delivered')
 		.order('created_at', { ascending: false })
 
-  if (error || !data) return []
-  return data as DbOrder[]
+	if (error || !data) return []
+	return data as DbOrder[]
 }
 
 /**
  * Fetch available jobs for a rider — pending orders with no rider assigned.
  */
 export async function getAvailableOrders(
-  supabase: SupabaseClient,
-  limit = 10
+	supabase: SupabaseClient,
+	limit = 10
 ): Promise<DbOrder[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('status', 'pending')
-    .is('rider_id', null)
-    .limit(limit)
+	const { data, error } = await supabase
+		.from('orders')
+		.select('*')
+		.eq('status', 'pending')
+		.is('rider_id', null)
+		.limit(limit)
 
-  if (error || !data) return []
-  return data as DbOrder[]
+	if (error || !data) return []
+	return data as DbOrder[]
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -129,17 +133,17 @@ export async function getAvailableOrders(
  * Throws on error so the caller can handle it.
  */
 export async function createOrder(
-  supabase: SupabaseClient,
-  orderData: Omit<DbOrder, 'id' | 'created_at' | 'updated_at'>
+	supabase: SupabaseClient,
+	orderData: Omit<DbOrder, 'id' | 'created_at' | 'updated_at'>
 ): Promise<DbOrder> {
-  const { data, error } = await supabase
-    .from('orders')
-    .insert(orderData)
-    .select()
-    .single()
+	const { data, error } = await supabase
+		.from('orders')
+		.insert(orderData)
+		.select()
+		.single()
 
-  if (error) throw new Error(`Failed to create order: ${error.message}`)
-  return data as DbOrder
+	if (error) throw new Error(`Failed to create order: ${error.message}`)
+	return data as DbOrder
 }
 
 /**
@@ -147,17 +151,18 @@ export async function createOrder(
  * Used by the rider's active-job screen to progress through the delivery flow.
  */
 export async function updateOrderStatus(
-  supabase: SupabaseClient,
-  orderId: string,
-  status: OrderStatus,
-  extraFields: Partial<DbOrder> = {}
+	supabase: SupabaseClient,
+	orderId: string,
+	status: OrderStatus,
+	extraFields: Partial<DbOrder> = {}
 ): Promise<void> {
-  const { error } = await supabase
-    .from('orders')
-    .update({ status, ...extraFields })
-    .eq('id', orderId)
+	const { error } = await supabase
+		.from('orders')
+		.update({ status, ...extraFields })
+		.eq('id', orderId)
 
-  if (error) throw new Error(`Failed to update order status: ${error.message}`)
+	if (error)
+		throw new Error(`Failed to update order status: ${error.message}`)
 }
 
 /**
@@ -205,7 +210,7 @@ export async function releaseRiderFromOrder(
 		})
 		.eq('id', orderId)
 
-  if (error) throw new Error(`Failed to release rider: ${error.message}`)
+	if (error) throw new Error(`Failed to release rider: ${error.message}`)
 }
 
 /**
@@ -213,24 +218,23 @@ export async function releaseRiderFromOrder(
  * The ops terminal version also voids payment — pass paymentStatus accordingly.
  */
 export async function cancelOrder(
-  supabase: SupabaseClient,
-  orderId: string,
-  opts: { voidPayment?: boolean } = {}
+	supabase: SupabaseClient,
+	orderId: string,
+	opts: { voidPayment?: boolean } = {}
 ): Promise<void> {
-  const update: Partial<DbOrder> = {
-    status: 'cancelled',
-    rider_id: null,
-  }
+	const update: Partial<DbOrder> = {
+		status: 'cancelled',
+		rider_id: null
+	}
 
-  if (opts.voidPayment) {
-    update.payment_status = 'voided'
-    update.negotiation_status = 'terminated'
-  }
+	if (opts.voidPayment) {
+		update.payment_status = 'voided'
+	}
 
-  const { error } = await supabase
-    .from('orders')
-    .update(update)
-    .eq('id', orderId)
+	const { error } = await supabase
+		.from('orders')
+		.update(update)
+		.eq('id', orderId)
 
-  if (error) throw new Error(`Failed to cancel order: ${error.message}`)
+	if (error) throw new Error(`Failed to cancel order: ${error.message}`)
 }

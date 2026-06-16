@@ -8,7 +8,7 @@ import type { RiderWithUser } from '@/types/domain.types'
  * Fetch `users` rows for a set of auth user ids and return a Map keyed by id.
  *
  * We deliberately avoid PostgREST's embedded-resource join syntax
- * (`.select('*, users(full_name, email, phone)')`) here. That syntax depends
+ * (`.select('*, users(name, email, phone)')`) here. That syntax depends
  * on a foreign key relationship being registered in PostgREST's schema cache —
  * if it isn't (or it's ambiguous), the query can error or silently return
  * nothing. A plain `.in('id', ids)` lookup has no such dependency.
@@ -19,14 +19,14 @@ async function getUsersByIds(
 ): Promise<
 	Map<
 		string,
-		{ full_name: string | null; email: string | null; phone: string | null }
+		{ name: string | null; email: string | null; phone: string | null }
 	>
 > {
 	if (userIds.length === 0) return new Map()
 
 	const { data, error } = await supabase
 		.from('users')
-		.select('id, full_name, email, phone')
+		.select('id, name, email, phone')
 		.in('id', userIds)
 
 	if (error) {
@@ -40,7 +40,7 @@ async function getUsersByIds(
 	return new Map(
 		(data ?? []).map((u) => [
 			u.id,
-			{ full_name: u.full_name, email: u.email, phone: u.phone }
+			{ name: u.name, email: u.email, phone: u.phone }
 		])
 	)
 }

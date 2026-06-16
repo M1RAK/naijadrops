@@ -51,7 +51,7 @@ function ConfirmContent() {
 					// Step 2: fetch the user row separately — no FK join needed
 					const { data: userRow } = await supabase
 						.from('users')
-						.select('full_name, email')
+						.select('name, email')
 						.eq('id', riderRow.user_id)
 						.single()
 
@@ -84,11 +84,11 @@ function ConfirmContent() {
 		email: rider?.users?.email || 'customer@naijadrops.com',
 		amount: (order?.agreed_price || 0) * 100, // Paystack uses kobo
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-			metadata: {
-				orderId: orderId,
-				riderId: rider?.id,
-				vendorId: order?.vendor_id
-			}
+		metadata: {
+			orderId: orderId,
+			riderId: rider?.id,
+			vendorId: order?.vendor_id
+		}
 	}
 
 	const handlePaystackSuccessAction = (reference) => {
@@ -160,7 +160,7 @@ function ConfirmContent() {
 						<div className='flex-1'>
 							<div className='flex items-center gap-2'>
 								<span className='text-white font-black text-xl'>
-									{rider?.users?.full_name ||
+									{rider?.users?.name ||
 										'Verified Driver'}
 								</span>
 								<ShieldCheck
@@ -175,9 +175,7 @@ function ConfirmContent() {
 										{rider?.rating || '5.0'}
 									</span>
 								</div>
-								<span className='text-charcoal-600 text-xs'>
-									
-								</span>
+								<span className='text-charcoal-600 text-xs'></span>
 								<span className='text-charcoal-400 text-xs capitalize font-medium'>
 									{order?.vehicle_type || 'motorcycle'}
 								</span>

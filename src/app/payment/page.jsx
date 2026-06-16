@@ -50,12 +50,12 @@ function PaymentContent() {
 				if (order.rider_id) {
 					const { data: driver } = await supabase
 						.from('riders')
-						.select('*, users(full_name)')
+						.select('*, users(name)')
 						.eq('user_id', order.rider_id)
 						.single()
 					setDriverData({
 						...driver,
-						full_name: driver?.users?.full_name
+						full_name: driver?.users?.name || driver?.full_name
 					})
 				}
 			} catch (err) {

@@ -93,8 +93,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 	const rider = await getRiderWithUser(supabase, params.driverId)
 	if (!rider) notFound()
 
-	const displayName =
-		rider.users?.full_name || rider.full_name || 'Unknown Driver'
+	const displayName = rider.users?.name || rider.full_name || 'Unknown Driver'
 
 	const { data: recentOrders } = await supabase
 		.from('orders')
