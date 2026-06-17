@@ -51,11 +51,11 @@ function PaymentContent() {
 					const { data: driver } = await supabase
 						.from('riders')
 						.select('*, users(name)')
-						.eq('user_id', order.rider_id)
+						.eq('id', order.rider_id)
 						.single()
 					setDriverData({
 						...driver,
-						full_name: driver?.users?.name || driver?.full_name
+						full_name: driver?.users?.name || 'Verified Rider'
 					})
 				}
 			} catch (err) {

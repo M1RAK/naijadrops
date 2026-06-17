@@ -60,7 +60,6 @@ export default async function AdminDriversPage() {
 									<div className='flex items-center gap-2'>
 										<h3 className='text-lg font-black'>
 											{rider.users?.name ||
-												rider.full_name ||
 												'Unnamed Rider'}
 										</h3>
 									</div>
