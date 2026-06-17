@@ -31,9 +31,9 @@ export default function RiderOnboardingPage() {
 	const [pageLoading, setPageLoading] = useState(true)
 	const [error, setError] = useState(null)
 	const [existingStatus, setExistingStatus] = useState(null)
+	const [displayName, setDisplayName] = useState('')
 	const [uploadStats, setUploadStats] = useState({})
 	const [formData, setFormData] = useState({
-		full_name: '',
 		phone: '',
 		vehicle_type: 'bike',
 		plate_number: '',
@@ -51,6 +51,15 @@ export default function RiderOnboardingPage() {
 				router.replace('/auth/login')
 				return
 			}
+
+			// Display name comes from users.name (set at signup via Google
+			// OAuth) — onboarding no longer collects/overwrites it.
+			const { data: userRow } = await supabase
+				.from('users')
+				.select('name')
+				.eq('id', user.id)
+				.single()
+			setDisplayName(userRow?.name || '')
 
 			const { data: rider } = await supabase
 				.from('riders')
@@ -268,19 +277,16 @@ export default function RiderOnboardingPage() {
 			<div className='flex-1 px-6 pb-24 overflow-y-auto'>
 				{step === 1 && (
 					<div className='space-y-6'>
-						<div>
-							<label className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest ml-1 mb-2 block'>
-								Full Name
-							</label>
-							<input
-								type='text'
-								name='full_name'
-								value={formData.full_name}
-								onChange={handleInputChange}
-								placeholder='As seen on your ID'
-								className='w-full bg-charcoal-900 border border-white/10 rounded-2xl py-4 px-5 text-white placeholder:text-charcoal-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/40'
-							/>
-						</div>
+						{displayName && (
+							<div className='bg-white/3 border border-white/10 rounded-2xl p-5'>
+								<div className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest mb-1'>
+									Signed in as
+								</div>
+								<div className='text-white font-bold'>
+									{displayName}
+								</div>
+							</div>
+						)}
 						<div>
 							<label className='text-[10px] font-black text-charcoal-500 uppercase tracking-widest ml-1 mb-2 block'>
 								Phone Number
@@ -296,7 +302,7 @@ export default function RiderOnboardingPage() {
 						</div>
 						<button
 							onClick={() => setStep(2)}
-							disabled={!formData.full_name || !formData.phone}
+							disabled={!formData.phone}
 							className='w-full bg-emerald-500 hover:bg-emerald-400 text-charcoal-950 font-black py-4 rounded-2xl uppercase text-sm tracking-widest disabled:opacity-50'>
 							Next
 						</button>

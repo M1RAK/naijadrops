@@ -34,6 +34,7 @@ export default function RiderDashboard() {
 	const router = useRouter()
 	const supabase = createClient()
 	const [rider, setRider] = useState(null)
+	const [displayName, setDisplayName] = useState('')
 	const [offers, setOffers] = useState([])
 	const [activeJob, setActiveJob] = useState(null)
 	const [isOnline, setIsOnline] = useState(false)
@@ -96,6 +97,15 @@ export default function RiderDashboard() {
 
 		setRider(riderData)
 		setIsOnline(riderData.operational_status === 'online')
+
+		// Display name lives on users.name, not riders — fetched separately
+		// since there's no full_name column on riders anymore
+		const { data: userRow } = await supabase
+			.from('users')
+			.select('name')
+			.eq('id', user.id)
+			.single()
+		setDisplayName(userRow?.name || '')
 
 		const { data: activeRows } = await supabase
 			.from('orders')
@@ -231,7 +241,7 @@ export default function RiderDashboard() {
 							Rider Workspace
 						</p>
 						<h2 className='text-2xl font-black text-white mb-1'>
-							{rider?.full_name || 'Rider'}
+							{displayName || 'Rider'}
 						</h2>
 						<p className='text-charcoal-400 text-sm font-medium'>
 							Rating: ⭐ {rider?.rating || '5.0'}

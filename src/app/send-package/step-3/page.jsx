@@ -133,16 +133,25 @@ function Step3Content() {
         },
         async (payload) => {
           if (payload.new.rider_user_id && payload.new.status === 'matched') {
-            // rider_user_id is now denormalised on the order — no join needed
+            // rider_user_id is denormalised on the order — no join needed
+            // to find the rider row itself
             const { data: rider } = await supabase
               .from('riders')
-              .select('vehicle_type, rating, full_name')
+              .select('vehicle_type, rating')
               .eq('user_id', payload.new.rider_user_id)
+              .single()
+
+            // Display name lives on users.name, not riders.full_name
+            // (that column was removed — users.name is the source of truth)
+            const { data: userRow } = await supabase
+              .from('users')
+              .select('name')
+              .eq('id', payload.new.rider_user_id)
               .single()
 
             setMatchedRider({
               id: payload.new.rider_user_id,
-              name: rider?.full_name || 'Driver',
+              name: userRow?.name || 'Driver',
               vehicle_type: rider?.vehicle_type || 'bike',
               rating: rider?.rating || 5.0,
               eta_min: Math.round(5 + Math.random() * 10),
