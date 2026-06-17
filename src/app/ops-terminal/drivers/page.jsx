@@ -16,8 +16,23 @@ export default async function AdminDriversPage() {
 		redirect('/')
 	}
 
-	const adminSupabase = createAdminClient()
-	const riders = await getAllRiders(adminSupabase)
+	let riders = []
+	let debugError = null
+
+	try {
+		const adminSupabase = createAdminClient()
+		const { data: rawCheck, error: rawError } = await adminSupabase
+			.from('riders')
+			.select('*')
+		if (rawError) {
+			debugError = `Supabase query error: ${rawError.message} (code: ${rawError.code ?? 'none'})`
+		} else {
+			debugError = `Raw query succeeded. Row count: ${rawCheck?.length ?? 0}. URL used: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`
+		}
+		riders = await getAllRiders(adminSupabase)
+	} catch (err) {
+		debugError = `Threw before query: ${err instanceof Error ? err.message : String(err)}`
+	}
 
 	const pendingRiders = riders.filter((r) => r.status === 'pending')
 	const approvedRiders = riders.filter((r) => r.status === 'approved')
@@ -36,6 +51,12 @@ export default async function AdminDriversPage() {
 				</div>
 				<InviteDriverButton />
 			</div>
+
+			{debugError && (
+				<div className='mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 text-xs font-mono break-all'>
+					DEBUG: {debugError}
+				</div>
+			)}
 
 			<div className='grid grid-cols-1 gap-4'>
 				{riders.length > 0 ? (
@@ -59,8 +80,7 @@ export default async function AdminDriversPage() {
 								<div className='flex-1'>
 									<div className='flex items-center gap-2'>
 										<h3 className='text-lg font-black'>
-											{rider.users?.name ||
-												'Unnamed Rider'}
+											{rider.users?.name || 'Unnamed Rider'}
 										</h3>
 									</div>
 									<div className='flex gap-2'>
