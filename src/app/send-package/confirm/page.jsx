@@ -10,7 +10,7 @@ const PaystackButton = dynamic(
 	() => import('react-paystack').then((mod) => mod.PaystackButton),
 	{ ssr: false }
 )
-function ConfirmContent() {
+async function ConfirmContent() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const orderId = searchParams.get('orderId')
@@ -81,8 +81,10 @@ function ConfirmContent() {
 
 	const paystackConfig = {
 		reference: new Date().getTime().toString(),
-		email: rider?.users?.email || 'customer@naijadrops.com',
-		amount: (order?.agreed_price || 0) * 100, // Paystack uses kobo
+		email:
+			(await supabase.auth.getUser()).data.user?.email ||
+			'customer@naijadrops.com',
+		amount: (order?.agreed_price || 0) * 100,
 		publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
 		metadata: {
 			orderId: orderId,
@@ -160,8 +162,7 @@ function ConfirmContent() {
 						<div className='flex-1'>
 							<div className='flex items-center gap-2'>
 								<span className='text-white font-black text-xl'>
-									{rider?.users?.name ||
-										'Verified Driver'}
+									{rider?.users?.name || 'Verified Driver'}
 								</span>
 								<ShieldCheck
 									size={16}

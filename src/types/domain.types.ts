@@ -12,14 +12,11 @@ export interface LocationPoint {
 // ─── Enriched DB objects (joined queries) ────────────────────────────────────
 
 /** Rider row + their auth user record */
+/** Rider row + their auth user record */
 export interface RiderWithUser extends DbRider {
-	users:
-		| {
-				name: string | null
-				email: string | null
-				phone: string | null
-		  }
-		| null
+	users: {
+		name: string | null
+	} | null
 }
 
 /** Order row + the rider's profile (for vendor tracking view) */

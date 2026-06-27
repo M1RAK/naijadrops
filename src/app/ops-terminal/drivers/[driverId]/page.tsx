@@ -4,12 +4,9 @@ import { createAdminClient } from '@/utils/supabase/admin'
 import { getRiderWithUser } from '@/services/riders.service'
 import { redirect, notFound } from 'next/navigation'
 import {
-	Truck,
 	Star,
 	Phone,
-	Mail,
 	FileText,
-	Clock,
 	ArrowLeft,
 	Package
 } from 'lucide-react'
@@ -170,42 +167,10 @@ export default async function DriverDetailPage({ params }: PageProps) {
 							</div>
 						</div>
 						<div className='space-y-3 text-sm'>
-							{rider.users?.email && (
-								<div className='flex items-center gap-3 text-charcoal-400'>
-									<Mail size={14} className='shrink-0' />
-									<span className='truncate'>
-										{rider.users.email}
-									</span>
-								</div>
-							)}
 							{rider.phone && (
 								<div className='flex items-center gap-3 text-charcoal-400'>
 									<Phone size={14} className='shrink-0' />
 									<span>{rider.phone}</span>
-								</div>
-							)}
-							{rider.vehicle_type && (
-								<div className='flex items-center gap-3 text-charcoal-400'>
-									<Truck size={14} className='shrink-0' />
-									<span className='capitalize'>
-										{rider.vehicle_type}
-									</span>
-									{rider.plate_number && (
-										<span className='text-white font-black'>
-											{rider.plate_number}
-										</span>
-									)}
-								</div>
-							)}
-							{rider.created_at && (
-								<div className='flex items-center gap-3 text-charcoal-400'>
-									<Clock size={14} className='shrink-0' />
-									<span>
-										Joined{' '}
-										{new Date(
-											rider.created_at
-										).toLocaleDateString()}
-									</span>
 								</div>
 							)}
 						</div>

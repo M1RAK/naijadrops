@@ -26,7 +26,7 @@ async function getUsersByIds(
 
 	const { data, error } = await supabase
 		.from('users')
-		.select('id, name, email, phone')
+		.select('id, name')
 		.in('id', userIds)
 
 	if (error) {
@@ -40,7 +40,7 @@ async function getUsersByIds(
 	return new Map(
 		(data ?? []).map((u) => [
 			u.id,
-			{ name: u.name, email: u.email, phone: u.phone }
+			{ name: u.name, email: null, phone: null }
 		])
 	)
 }
