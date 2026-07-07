@@ -1,7 +1,7 @@
 'use server'
 
 import { validateAdmin, logAdminAction } from '@/utils/admin'
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import {
 	approveRider as approveRiderService,
@@ -11,7 +11,7 @@ import {
 export async function approveRider(riderId) {
 	try {
 		const { admin } = await validateAdmin()
-		const supabase = await createClient()
+		const supabase = createAdminClient()
 
 		await approveRiderService(supabase, riderId)
 
@@ -30,7 +30,7 @@ export async function approveRider(riderId) {
 export async function deactivateRider(riderId) {
 	try {
 		const { admin } = await validateAdmin()
-		const supabase = await createClient()
+		const supabase = createAdminClient()
 
 		await deactivateRiderService(supabase, riderId)
 
@@ -49,7 +49,6 @@ export async function deactivateRider(riderId) {
 export async function inviteRider(formData) {
 	try {
 		const { admin } = await validateAdmin()
-		const { createAdminClient } = await import('@/utils/supabase/admin')
 		const adminSupabase = createAdminClient()
 
 		const email = formData.get('email')

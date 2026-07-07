@@ -14,7 +14,7 @@ import Link from 'next/link'
 import DriverActions from '../DriverActions'
 
 interface PageProps {
-	params: { driverId: string }
+	params: Promise<{ driverId: string }>
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -78,16 +78,19 @@ function DocumentCard({ label, url }: { label: string; url: string | null }) {
 	)
 }
 
-export default async function DriverDetailPage({ params }: PageProps) {
+export default async function DriverDetailPage({
+	params: paramsPromise
+}: PageProps) {
 	try {
 		await validateAdmin()
 	} catch {
 		redirect('/')
 	}
 
+	const { driverId } = await paramsPromise
 	const supabase = createAdminClient()
 
-	const rider = await getRiderWithUser(supabase, params.driverId)
+	const rider = await getRiderWithUser(supabase, driverId)
 	if (!rider) notFound()
 
 	const displayName = rider.users?.name || 'Unknown Driver'
@@ -97,7 +100,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 		.select(
 			'id, status, agreed_price, created_at, pickup_name, dropoff_name'
 		)
-		.eq('rider_user_id', params.driverId)
+		.eq('rider_user_id', driverId)
 		.order('created_at', { ascending: false })
 		.limit(5)
 
@@ -132,7 +135,7 @@ export default async function DriverDetailPage({ params }: PageProps) {
 				<div className='flex items-center gap-3'>
 					<StatusBadge status={rider.status} />
 					<DriverActions
-						riderId={params.driverId}
+						riderId={driverId}
 						isApproved={rider.status === 'approved'}
 					/>
 				</div>

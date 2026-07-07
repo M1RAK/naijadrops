@@ -1,13 +1,13 @@
 'use server'
 
 import { validateAdmin, logAdminAction } from '@/utils/admin'
-import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function forceCancelOrder(orderId, reason = 'Ops Override') {
 	try {
 		const { admin } = await validateAdmin()
-		const supabase = await createClient()
+		const supabase = await createAdminClient()
 
 		const { error: orderError } = await supabase
 			.from('orders')
