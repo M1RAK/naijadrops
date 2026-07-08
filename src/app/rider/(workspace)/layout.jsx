@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import RiderHeartbeat from '@/components/driver/RiderHeartbeat'
 import { Clock, ShieldAlert, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -11,12 +12,14 @@ export default async function RiderWorkspaceLayout({ children }) {
 		redirect('/auth/login')
 	}
 
-	const { data: { user } } = await supabase.auth.getUser()
+	const {
+		data: { user }
+	} = await supabase.auth.getUser()
 	if (!user) redirect('/auth/login')
 
 	const { data: rider } = await supabase
 		.from('riders')
-		.select('status, rejection_reason')
+		.select('id, status, operational_status, rejection_reason')
 		.eq('user_id', user.id)
 		.single()
 
@@ -27,6 +30,7 @@ export default async function RiderWorkspaceLayout({ children }) {
 	const isPending = rider.status === 'pending'
 	const isRejected = rider.status === 'rejected'
 	const isPaused = rider.status === 'paused'
+	const isOnline = rider.operational_status === 'online'
 
 	return (
 		<div className='flex flex-col min-h-dvh bg-charcoal-950 text-white selection:bg-emerald-500 overflow-x-hidden'>
@@ -37,10 +41,26 @@ export default async function RiderWorkspaceLayout({ children }) {
 				<div className='flex gap-4 text-[10px] font-black uppercase tracking-widest text-charcoal-500'>
 					{isApproved && (
 						<>
-							<a href='/rider/dashboard' className='hover:text-emerald-400'>Dashboard</a>
-							<Link href='/rider/active-job' className='hover:text-emerald-400'>Active</Link>
-							<Link href='/rider/earnings' className='hover:text-emerald-400'>Money</Link>
-							<Link href='/rider/profile' className='hover:text-emerald-400'>Account</Link>
+							<a
+								href='/rider/dashboard'
+								className='hover:text-emerald-400'>
+								Dashboard
+							</a>
+							<Link
+								href='/rider/active-job'
+								className='hover:text-emerald-400'>
+								Active
+							</Link>
+							<Link
+								href='/rider/earnings'
+								className='hover:text-emerald-400'>
+								Money
+							</Link>
+							<Link
+								href='/rider/profile'
+								className='hover:text-emerald-400'>
+								Account
+							</Link>
 						</>
 					)}
 				</div>
@@ -69,9 +89,14 @@ export default async function RiderWorkspaceLayout({ children }) {
 						</p>
 						<div className='bg-red-500/5 border border-red-500/20 rounded-2xl p-5 mb-8 w-full'>
 							<div className='flex items-start gap-3 text-left'>
-								<AlertTriangle className='text-red-400 shrink-0 mt-0.5' size={16} />
+								<AlertTriangle
+									className='text-red-400 shrink-0 mt-0.5'
+									size={16}
+								/>
 								<div>
-									<div className='text-white text-sm font-bold mb-1'>Reason for restriction:</div>
+									<div className='text-white text-sm font-bold mb-1'>
+										Reason for restriction:
+									</div>
 									<p className='text-charcoal-400 text-xs leading-relaxed'>
 										{rider.rejection_reason ||
 											'Your profile requires further verification or violated terms of service. Please contact our Kano operations center.'}
@@ -79,13 +104,20 @@ export default async function RiderWorkspaceLayout({ children }) {
 								</div>
 							</div>
 						</div>
-						<a href='/auth/login' className='w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-sm block text-center'>
+						<a
+							href='/auth/login'
+							className='w-full py-4 bg-white/5 border border-white/10 rounded-2xl text-white font-black text-sm block text-center'>
 							Sign Out
 						</a>
 					</div>
 				)}
 
 				{!isRejected && !isPaused && children}
+				{/* Silently writes GPS position + last_seen_at every 35s.
+			    Only active when the rider is approved and online. */}
+				{isApproved && (
+					<RiderHeartbeat riderId={rider.id} isOnline={isOnline} />
+				)}
 			</main>
 		</div>
 	)

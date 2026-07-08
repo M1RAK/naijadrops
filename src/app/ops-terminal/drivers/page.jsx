@@ -1,8 +1,9 @@
 import { validateAdmin } from '@/utils/admin'
 import { createAdminClient } from '@/utils/supabase/admin'
 import { getAllRiders } from '@/services/riders.service'
+import { getSignedUrl } from '@/utils/supabase/storage'
 import { redirect } from 'next/navigation'
-import { FileText, ShieldCheck } from 'lucide-react'
+import { FileText, ShieldCheck, Clock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 import DriverActions from './DriverActions'
 import InviteDriverButton from './InviteDriverButton'
@@ -16,23 +17,16 @@ export default async function AdminDriversPage() {
 		redirect('/')
 	}
 
-	let riders = []
-	let debugError = null
+	const adminSupabase = createAdminClient()
+	const riders = await getAllRiders(adminSupabase)
 
-	try {
-		const adminSupabase = createAdminClient()
-		const { data: rawCheck, error: rawError } = await adminSupabase
-			.from('riders')
-			.select('*')
-		if (rawError) {
-			debugError = `Supabase query error: ${rawError.message} (code: ${rawError.code ?? 'none'})`
-		} else {
-			debugError = `Raw query succeeded. Row count: ${rawCheck?.length ?? 0}. URL used: ${process.env.NEXT_PUBLIC_SUPABASE_URL}`
-		}
-		riders = await getAllRiders(adminSupabase)
-	} catch (err) {
-		debugError = `Threw before query: ${err instanceof Error ? err.message : String(err)}`
-	}
+	// Generate signed URLs for profile photos (documents bucket is private)
+	const ridersWithPhotos = await Promise.all(
+		riders.map(async (rider) => ({
+			...rider,
+			signedPhotoUrl: await getSignedUrl(adminSupabase, rider.profile_photo_url)
+		}))
+	)
 
 	const pendingRiders = riders.filter((r) => r.status === 'pending')
 	const approvedRiders = riders.filter((r) => r.status === 'approved')
@@ -52,51 +46,76 @@ export default async function AdminDriversPage() {
 				<InviteDriverButton />
 			</div>
 
-			{debugError && (
-				<div className='mb-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-300 text-xs font-mono break-all'>
-					DEBUG: {debugError}
-				</div>
-			)}
-
 			<div className='grid grid-cols-1 gap-4'>
-				{riders.length > 0 ? (
-					riders.map((rider) => (
+				{ridersWithPhotos.length > 0 ? (
+					ridersWithPhotos.map((rider) => (
 						<Link
 							key={rider.user_id}
 							href={`/ops-terminal/drivers/${rider.user_id}`}>
 							<div className='bg-charcoal-900/40 border border-white/5 rounded-2xl p-6 flex items-center gap-6 hover:border-emerald-500/20 transition-all cursor-pointer'>
-								<div className='w-16 h-16 rounded-2xl bg-charcoal-800 shrink-0 flex items-center justify-center text-xs font-black'>
-									{rider.profile_photo_url ? (
+								{/* Profile photo */}
+								<div className='w-16 h-16 rounded-2xl bg-charcoal-800 shrink-0 overflow-hidden flex items-center justify-center text-xs font-black text-charcoal-500 border border-white/5'>
+									{rider.signedPhotoUrl ? (
 										<img
-											src={rider.profile_photo_url}
+											src={rider.signedPhotoUrl}
 											alt='Profile'
-											className='w-full h-full object-cover rounded-2xl'
+											className='w-full h-full object-cover'
 										/>
 									) : (
-										'ND'
+										<span>{rider.users?.name?.[0] ?? 'ND'}</span>
 									)}
 								</div>
 
-								<div className='flex-1'>
-									<div className='flex items-center gap-2'>
-										<h3 className='text-lg font-black'>
+								<div className='flex-1 min-w-0'>
+									{/* Name + status badge */}
+									<div className='flex items-center gap-2 mb-1'>
+										<h3 className='text-base font-black truncate'>
 											{rider.users?.name || 'Unnamed Rider'}
 										</h3>
+										{rider.status === 'approved' ? (
+											<span className='shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'>
+												<CheckCircle size={10} /> Active
+											</span>
+										) : (
+											<span className='shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20'>
+												<Clock size={10} /> Pending
+											</span>
+										)}
 									</div>
+
+									{/* Vehicle + plate */}
+									<div className='flex items-center gap-3 text-charcoal-500 text-[10px] font-bold uppercase tracking-widest mb-2'>
+										<span className='capitalize'>{rider.vehicle_type}</span>
+										{rider.plate_number && (
+											<>
+												<span>·</span>
+												<span>{rider.plate_number}</span>
+											</>
+										)}
+									</div>
+
+									{/* Document presence indicators */}
 									<div className='flex gap-2'>
-										{rider.license_url && (
-											<FileText
-												size={18}
-												className='text-blue-500'
-											/>
-										)}
 										{rider.id_card_url && (
-											<ShieldCheck
-												size={18}
-												className='text-emerald-500'
-											/>
+											<span className='flex items-center gap-1 text-[9px] font-black uppercase text-emerald-500'>
+												<ShieldCheck size={12} /> ID
+											</span>
+										)}
+										{rider.license_url && (
+											<span className='flex items-center gap-1 text-[9px] font-black uppercase text-blue-400'>
+												<FileText size={12} /> License
+											</span>
+										)}
+										{rider.vehicle_photo_url && (
+											<span className='flex items-center gap-1 text-[9px] font-black uppercase text-charcoal-400'>
+												<FileText size={12} /> Vehicle
+											</span>
 										)}
 									</div>
+								</div>
+
+								{/* Actions — preventDefault stops the Link from firing when buttons are clicked */}
+								<div onClick={(e) => e.preventDefault()}>
 									<DriverActions
 										riderId={rider.user_id}
 										isApproved={rider.status === 'approved'}
@@ -106,8 +125,8 @@ export default async function AdminDriversPage() {
 						</Link>
 					))
 				) : (
-					<div className='text-center py-20 text-charcoal-600'>
-						No drivers
+					<div className='text-center py-20 text-charcoal-600 text-xs font-black uppercase tracking-widest'>
+						No drivers registered yet
 					</div>
 				)}
 			</div>

@@ -114,6 +114,7 @@ function TrackingContent() {
 
 	const orderId = params.orderId as string
 	const openChat = searchParams.get('openChat') === '1'
+	const paymentVerifying = searchParams.get('payment') === 'verifying'
 
 	const [order, setOrder] = useState<Order | null>(null)
 	const [riderLocation, setRiderLocation] = useState<RiderLocation | null>(
@@ -318,6 +319,19 @@ function TrackingContent() {
 					}}
 					demandData={[]}
 				/>
+
+				{paymentVerifying &&
+					(order.status === 'matched' ||
+						order.status === 'pending') && (
+						<div className='absolute top-4 inset-x-4 flex justify-center pointer-events-none z-20'>
+							<div className='px-4 py-2 rounded-full border backdrop-blur-md flex items-center gap-2 bg-blue-500/10 border-blue-500/20'>
+								<div className='w-2 h-2 rounded-full animate-pulse bg-blue-400' />
+								<span className='text-xs font-black uppercase tracking-widest text-blue-400'>
+									Confirming payment…
+								</span>
+							</div>
+						</div>
+					)}
 
 				{/* Status pill overlay */}
 				<div className='absolute top-14 inset-x-4 flex justify-center pointer-events-none'>

@@ -15,7 +15,7 @@ export async function getOrderById(
 ): Promise<OrderWithRider | null> {
 	const { data, error } = await supabase
 		.from('orders')
-		.select('*, riders(*, users(name, email))')
+		.select('*, riders(*, users(name))')
 		.eq('id', orderId)
 		.single()
 

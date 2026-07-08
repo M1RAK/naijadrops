@@ -16,6 +16,7 @@ export default async function DashboardLayout({ children }) {
 	if (!user) redirect('/auth/login')
 
 	const portals = await getUserPortals(supabase)
+	if (portals?.isAdmin) redirect('/ops-terminal/dashboard')
 	if (portals?.rider) redirect('/rider')
 
 	return <>{children}</>
