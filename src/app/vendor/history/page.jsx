@@ -7,6 +7,7 @@ import {
 	ArrowLeft,
 	Clock,
 	MapPin,
+	Navigation,
 	Package,
 	History as HistoryIcon,
 	ChevronRight
@@ -100,12 +101,12 @@ export default function VendorHistoryPage() {
 					{[1, 2, 3, 4].map((i) => (
 						<div
 							key={i}
-							className='bg-white/[0.03] rounded-[2rem] p-6 border border-white/10 h-32 animate-pulse'
+							className='bg-white/3 rounded-4xl p-6 border border-white/10 h-32 animate-pulse'
 						/>
 					))}
 				</div>
 			) : orders.length === 0 ? (
-				<div className='bg-white/[0.03] border border-white/10 rounded-[2.5rem] p-12 text-center flex flex-col items-center justify-center'>
+				<div className='bg-white/3 border border-white/10 rounded-[2.5rem] p-12 text-center flex flex-col items-center justify-center'>
 					<div className='w-20 h-20 bg-charcoal-900 rounded-full flex items-center justify-center mb-6 border border-white/5'>
 						<Package size={40} className='text-charcoal-600' />
 					</div>
@@ -128,7 +129,7 @@ export default function VendorHistoryPage() {
 						<Link
 							href={`/tracking/${order.id}`}
 							key={order.id}
-							className='group block bg-white/[0.03] hover:bg-white/[0.05] rounded-[2rem] p-6 border border-white/10 transition-all hover:border-emerald-500/30 overflow-hidden relative'>
+							className='group block bg-white/3 hover:bg-white/5 rounded-4xl p-6 border border-white/10 transition-all hover:border-emerald-500/30 overflow-hidden relative'>
 							<div className='absolute top-0 right-0 p-6 flex flex-col items-end'>
 								<div
 									className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border ${getStatusStyle(
@@ -168,7 +169,7 @@ export default function VendorHistoryPage() {
 										<div className='text-[9px] font-black text-charcoal-600 uppercase tracking-widest font-outfit'>
 											Origin
 										</div>
-										<div className='text-sm font-bold text-white truncate max-w-[200px]'>
+										<div className='text-sm font-bold text-white truncate max-w-50'>
 											{order.pickup_name}
 										</div>
 									</div>
@@ -181,7 +182,7 @@ export default function VendorHistoryPage() {
 										<div className='text-[9px] font-black text-charcoal-600 uppercase tracking-widest font-outfit italic'>
 											Terminal
 										</div>
-										<div className='text-sm font-bold text-white truncate max-w-[200px]'>
+										<div className='text-sm font-bold text-white truncate max-w-50'>
 											{order.dropoff_name}
 										</div>
 									</div>

@@ -60,22 +60,6 @@ export async function getUserPortals(
 // ─── Profile mutations ────────────────────────────────────────────────────────
 
 /**
- * Update the user's display name and avatar.
- */
-export async function updateUserProfile(
-	supabase: SupabaseClient,
-	userId: string,
-	updates: { name?: string; avatar_url?: string }
-): Promise<void> {
-	const { error } = await supabase
-		.from('users')
-		.update(updates)
-		.eq('id', userId)
-
-	if (error) throw new Error(`Failed to update profile: ${error.message}`)
-}
-
-/**
  * Ensure a users row exists for this user.
  *
  * The DB trigger (handle_new_user) creates this automatically at signup,
@@ -115,59 +99,7 @@ export function getPortalPath(portals: UserPortals): string {
 	return '/dashboard'
 }
 
-/**
- * Returns the correct redirect path for a role string.
- * Kept for compatibility with files that haven't migrated to getUserPortals yet.
- *
- * @deprecated Use getPortalPath(getUserPortals()) instead.
- */
-export function getRoleRedirectPath(role: string): string {
-	switch (role) {
-		case 'admin':
-			return '/ops-terminal/dashboard'
-		case 'rider':
-			return '/rider'
-		default:
-			return '/dashboard'
-	}
-}
-
 // ─── Admin validation ─────────────────────────────────────────────────────────
-
-/**
- * Server-side only. Validates the current user is an active admin.
- * Throws if not authorised — callers should catch and redirect.
- */
-export async function validateAdminUser(
-	supabase: SupabaseClient,
-	requiredRole: 'admin' | 'super_admin' = 'admin'
-): Promise<{ userId: string; adminRecord: Record<string, unknown> }> {
-	const {
-		data: { user },
-		error: authError
-	} = await supabase.auth.getUser()
-
-	if (authError || !user) {
-		throw new Error('Unauthorized — authentication required')
-	}
-
-	if (!user.email?.toLowerCase().endsWith('@naijadrops.tech')) {
-		throw new Error('Unauthorized — corporate domain required')
-	}
-
-	const { data: adminRecord, error: dbError } = await supabase
-		.from('admin_users')
-		.select('*')
-		.eq('id', user.id)
-		.single()
-
-	if (dbError || !adminRecord || !adminRecord.is_active) {
-		throw new Error('Unauthorized — admin clearance required')
-	}
-
-	if (requiredRole === 'super_admin' && !adminRecord.is_super_admin) {
-		throw new Error('Forbidden — super admin access only')
-	}
-
-	return { userId: user.id, adminRecord }
-}
+// All admin validation is handled by validateAdmin() in utils/admin.js
+// which uses the session-bound client and is called directly by
+// ops-terminal pages and server actions.

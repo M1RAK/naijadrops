@@ -1,5 +1,6 @@
 import { validateAdmin } from '@/utils/admin'
 import { createClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/admin'
 import { redirect } from 'next/navigation'
 import {
 	Truck,
@@ -7,7 +8,8 @@ import {
 	DollarSign,
 	Activity,
 	AlertTriangle,
-	ExternalLink
+	ExternalLink,
+	Circle
 } from 'lucide-react'
 import Link from 'next/link'
 import RealtimeAlerts from './RealtimeAlerts'
@@ -31,6 +33,8 @@ export default async function OpsDashboard() {
 		redirect('/auth/login')
 	}
 
+	const adminSupabase = createAdminClient()
+
 	const { count: onlineRiderCount } = await supabase
 		.from('riders')
 		.select('*', { count: 'exact', head: true })
@@ -51,6 +55,27 @@ export default async function OpsDashboard() {
 			(acc, curr) => acc + (curr.agreed_price || 0),
 			0
 		) || 0
+
+	// Fetch approved riders for the fleet monitor card
+	const { data: liveRiders } = await adminSupabase
+		.from('riders')
+		.select(
+			'id, user_id, operational_status, vehicle_type, current_lat, current_lng'
+		)
+		.eq('status', 'approved')
+		.order('operational_status', { ascending: false })
+		.limit(8)
+
+	// Fetch display names for those riders
+	const riderUserIds = (liveRiders ?? []).map((r) => r.user_id)
+	const usersById = new Map()
+	if (riderUserIds.length > 0) {
+		const { data: users } = await adminSupabase
+			.from('users')
+			.select('id, name')
+			.in('id', riderUserIds)
+		for (const u of users ?? []) usersById.set(u.id, u.name)
+	}
 
 	const stats = [
 		{
@@ -132,7 +157,7 @@ export default async function OpsDashboard() {
 
 			{/* Core Systems */}
 			<div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-				{/* Fleet Control */}
+				{/* Fleet Monitor */}
 				<div className='lg:col-span-2 space-y-6'>
 					<div className='flex justify-between items-center px-2'>
 						<h2 className='text-xs font-black text-emerald-500 uppercase tracking-widest'>
@@ -145,37 +170,74 @@ export default async function OpsDashboard() {
 						</Link>
 					</div>
 					<div className='bg-charcoal-900/40 border border-white/5 rounded-3xl overflow-hidden'>
-						<div className='p-8 text-center py-20 border-b border-white/5'>
-							<Truck
-								size={40}
-								className='mx-auto mb-4 text-charcoal-700'
-							/>
-							<p className='text-charcoal-500 text-sm'>
-								Initializing Fleet Visualization Engine...
-							</p>
-						</div>
-						<div className='p-6 bg-black/40 flex justify-between items-center'>
-							<div className='flex items-center gap-6'>
-								<div>
-									<div className='text-[10px] text-charcoal-600 font-black uppercase'>
-										Approved
-									</div>
-									<div className='text-white font-bold'>
-										Verified Only
-									</div>
-								</div>
-								<div>
-									<div className='text-[10px] text-charcoal-600 font-black uppercase'>
-										Coverage
-									</div>
-									<div className='text-white font-bold'>
-										Kano Metropolitan
-									</div>
-								</div>
+						{liveRiders && liveRiders.length > 0 ? (
+							<div className='divide-y divide-white/5'>
+								{liveRiders.map((rider) => {
+									const isOnline =
+										rider.operational_status === 'online'
+									const hasLocation =
+										!!rider.current_lat &&
+										!!rider.current_lng
+									return (
+										<Link
+											key={rider.id}
+											href={`/ops-terminal/drivers/${rider.user_id}`}
+											className='flex items-center gap-4 px-6 py-4 hover:bg-white/3 transition-all'>
+											<Circle
+												size={8}
+												className={
+													isOnline
+														? 'text-emerald-500 fill-emerald-500'
+														: 'text-charcoal-700 fill-charcoal-700'
+												}
+											/>
+											<div className='flex-1'>
+												<div className='text-sm font-black text-white'>
+													{usersById.get(
+														rider.user_id
+													) || 'Unnamed Rider'}
+												</div>
+												<div className='text-[10px] text-charcoal-500 uppercase tracking-widest font-bold capitalize'>
+													{rider.vehicle_type} ·{' '}
+													{isOnline
+														? hasLocation
+															? 'Tracking'
+															: 'Online — no GPS'
+														: 'Offline'}
+												</div>
+											</div>
+											<div
+												className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${
+													isOnline
+														? 'bg-emerald-500/10 text-emerald-400'
+														: 'bg-white/5 text-charcoal-600'
+												}`}>
+												{isOnline
+													? 'Online'
+													: 'Offline'}
+											</div>
+										</Link>
+									)
+								})}
+							</div>
+						) : (
+							<div className='p-12 text-center'>
+								<Truck
+									size={32}
+									className='mx-auto mb-3 text-charcoal-700'
+								/>
+								<p className='text-charcoal-600 text-xs font-black uppercase tracking-widest'>
+									No approved riders yet
+								</p>
+							</div>
+						)}
+						<div className='p-4 bg-black/40 flex justify-between items-center border-t border-white/5'>
+							<div className='text-[10px] text-charcoal-600 font-black uppercase tracking-widest'>
+								Showing up to 8 approved riders
 							</div>
 							<Link
 								href='/ops-terminal/drivers'
-								className='bg-emerald-500 text-black px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest'>
+								className='bg-emerald-500 text-black px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-400 transition-all'>
 								Manage Drivers
 							</Link>
 						</div>

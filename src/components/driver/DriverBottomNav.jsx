@@ -19,7 +19,6 @@ export default function DriverBottomNav() {
 			href: '/rider/earnings'
 		},
 		{ label: 'Active', icon: <Map size={20} />, href: '/rider/active-job' },
-		{ label: 'Account', icon: <User size={20} />, href: '/rider/profile' }
 	]
 
 	return (

@@ -4,16 +4,10 @@ import { useEffect, useState, Suspense } from 'react'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import {
-	MapPin,
-	Navigation,
-	Package,
 	Phone,
-	Clock,
 	CheckCircle2,
 	Loader2,
 	ShieldAlert,
-	MessageSquare,
-	Star
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
@@ -317,7 +311,6 @@ function TrackingContent() {
 						lat: order.dropoff_lat,
 						lng: order.dropoff_lng
 					}}
-					demandData={[]}
 				/>
 
 				{paymentVerifying &&

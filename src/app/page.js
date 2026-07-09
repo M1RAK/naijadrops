@@ -7,11 +7,11 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
-  	const [isLoggedIn, setIsLoggedIn] = useState(false)
+	const [isLoggedIn, setIsLoggedIn] = useState(false)
 	const supabase = createClient()
 	const router = useRouter()
 
-  	useEffect(() => {
+	useEffect(() => {
 		supabase.auth.getUser().then(({ data: { user } }) => {
 			setIsLoggedIn(!!user)
 		})
@@ -53,9 +53,13 @@ export default function LandingPage() {
 					</span>
 				</div>
 				<button
-					onClick={isLoggedIn ? () => router.push('/auth/resolve') : handleGoogleSignIn}
+					onClick={
+						isLoggedIn
+							? () => router.push('/auth/resolve')
+							: handleGoogleSignIn
+					}
 					className='px-5 py-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition-all text-white text-[11px] font-black uppercase tracking-widest'>
-				{isLoggedIn ? 'Go to Dashboard' : 'Sign In'}
+					{isLoggedIn ? 'Go to Dashboard' : 'Sign In'}
 				</button>
 			</nav>
 
@@ -150,8 +154,8 @@ export default function LandingPage() {
 						<a href='/privacy' className='hover:text-white'>
 							Privacy
 						</a>
-						<a href='/contact' className='hover:text-white'>
-							Contact
+						<a href='/ops-terminal' className='hover:text-white'>
+							Ops Terminal
 						</a>
 					</div>
 				</div>
