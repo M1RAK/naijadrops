@@ -28,10 +28,10 @@ const STATUS_CONFIG = {
 		color: 'text-blue-500',
 		bg: 'bg-blue-500/10 border-blue-500/20'
 	},
-	authorized: {
-		label: 'Payment Hold',
-		color: 'text-purple-500',
-		bg: 'bg-purple-500/10 border-purple-500/20'
+	assigned: {
+		label: 'Assigned',
+		color: 'text-blue-400',
+		bg: 'bg-blue-400/10 border-blue-400/20'
 	},
 	picked_up: {
 		label: 'Picked Up',

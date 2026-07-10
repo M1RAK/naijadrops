@@ -21,11 +21,20 @@ export default async function AdminDriversPage() {
 	const riders = await getAllRiders(adminSupabase)
 
 	// Generate signed URLs for profile photos (documents bucket is private)
+	// Each is wrapped individually so one failure doesn't crash the whole page
 	const ridersWithPhotos = await Promise.all(
-		riders.map(async (rider) => ({
-			...rider,
-			signedPhotoUrl: await getSignedUrl(adminSupabase, rider.profile_photo_url)
-		}))
+		riders.map(async (rider) => {
+			let signedPhotoUrl = null
+			try {
+				signedPhotoUrl = await getSignedUrl(
+					adminSupabase,
+					rider.profile_photo_url
+				)
+			} catch (err) {
+				console.error('[drivers] Failed to sign photo URL:', err)
+			}
+			return { ...rider, signedPhotoUrl }
+		})
 	)
 
 	const pendingRiders = riders.filter((r) => r.status === 'pending')
@@ -62,7 +71,9 @@ export default async function AdminDriversPage() {
 											className='w-full h-full object-cover'
 										/>
 									) : (
-										<span>{rider.users?.name?.[0] ?? 'ND'}</span>
+										<span>
+											{rider.users?.name?.[0] ?? 'ND'}
+										</span>
 									)}
 								</div>
 
@@ -70,7 +81,8 @@ export default async function AdminDriversPage() {
 									{/* Name + status badge */}
 									<div className='flex items-center gap-2 mb-1'>
 										<h3 className='text-base font-black truncate'>
-											{rider.users?.name || 'Unnamed Rider'}
+											{rider.users?.name ||
+												'Unnamed Rider'}
 										</h3>
 										{rider.status === 'approved' ? (
 											<span className='shrink-0 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'>
@@ -85,11 +97,15 @@ export default async function AdminDriversPage() {
 
 									{/* Vehicle + plate */}
 									<div className='flex items-center gap-3 text-charcoal-500 text-[10px] font-bold uppercase tracking-widest mb-2'>
-										<span className='capitalize'>{rider.vehicle_type}</span>
+										<span className='capitalize'>
+											{rider.vehicle_type}
+										</span>
 										{rider.plate_number && (
 											<>
 												<span>·</span>
-												<span>{rider.plate_number}</span>
+												<span>
+													{rider.plate_number}
+												</span>
 											</>
 										)}
 									</div>
@@ -114,13 +130,11 @@ export default async function AdminDriversPage() {
 									</div>
 								</div>
 
-								{/* Actions — preventDefault stops the Link from firing when buttons are clicked */}
-								<div onClick={(e) => e.preventDefault()}>
-									<DriverActions
-										riderId={rider.user_id}
-										isApproved={rider.status === 'approved'}
-									/>
-								</div>
+								{/* Actions — stopPropagation handled inside DriverActions */}
+								<DriverActions
+									riderId={rider.user_id}
+									isApproved={rider.status === 'approved'}
+								/>
 							</div>
 						</Link>
 					))
@@ -133,3 +147,4 @@ export default async function AdminDriversPage() {
 		</div>
 	)
 }
+

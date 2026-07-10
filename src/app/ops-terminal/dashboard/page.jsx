@@ -197,7 +197,7 @@ export default async function OpsDashboard() {
 														rider.user_id
 													) || 'Unnamed Rider'}
 												</div>
-												<div className='text-[10px] text-charcoal-500 uppercase tracking-widest font-bold capitalize'>
+												<div className='text-[10px] text-charcoal-500 uppercase tracking-widest font-bold'>
 													{rider.vehicle_type} ·{' '}
 													{isOnline
 														? hasLocation
